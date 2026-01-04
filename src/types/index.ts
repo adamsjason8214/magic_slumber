@@ -2,7 +2,9 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  price: number; // per night
+  basePrice: number; // price for first baseNights
+  baseNights: number; // number of nights included in base price
+  additionalNightPrice: number; // price per night after baseNights
   image: string;
   features: string[];
 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
 import { sendOrderNotification, sendCustomerConfirmation } from "@/lib/email";
 import { BookingFormData, CartItem, OrderSummary } from "@/types";
 import Stripe from "stripe";
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
 
       // Calculate order summary
       const subtotal = cartItems.reduce(
-        (sum, item) => sum + item.product.price * item.quantity * nights,
+        (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
         0
       );
 

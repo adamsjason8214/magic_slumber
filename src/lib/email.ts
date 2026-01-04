@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { BookingFormData, OrderSummary } from "@/types";
+import { calculateItemPrice } from "./products";
 
 // Create reusable transporter
 // For production, use actual Gmail credentials or a service like SendGrid/Resend
@@ -20,9 +21,7 @@ export async function sendOrderNotification(
     .map(
       (item) =>
         `- ${item.product.name} x${item.quantity} (${item.nights} nights) - $${(
-          item.product.price *
-          item.quantity *
-          item.nights
+          calculateItemPrice(item.product, item.nights) * item.quantity
         ).toFixed(2)}`
     )
     .join("\n");
@@ -32,7 +31,7 @@ export async function sendOrderNotification(
     to: "magicalslumberorlando@gmail.com",
     subject: `New Order #${orderId} - ${booking.firstName} ${booking.lastName}`,
     html: `
-      <h1>New Slumber Magic Order!</h1>
+      <h1>New Magical Slumber Order!</h1>
       <p><strong>Order ID:</strong> ${orderId}</p>
 
       <h2>Customer Information</h2>
@@ -72,13 +71,11 @@ export async function sendCustomerConfirmation(
   orderSummary: OrderSummary,
   orderId: string
 ) {
-  const itemsList = orderSummary.items
+  const customerItemsList = orderSummary.items
     .map(
       (item) =>
         `<li>${item.product.name} x${item.quantity} (${item.nights} nights) - $${(
-          item.product.price *
-          item.quantity *
-          item.nights
+          calculateItemPrice(item.product, item.nights) * item.quantity
         ).toFixed(2)}</li>`
     )
     .join("");
@@ -86,11 +83,11 @@ export async function sendCustomerConfirmation(
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: booking.email,
-    subject: `Order Confirmed! Slumber Magic Orlando #${orderId}`,
+    subject: `Order Confirmed! Magical Slumber Orlando #${orderId}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">Slumber Magic Orlando</h1>
+          <h1 style="color: white; margin: 0;">Magical Slumber Orlando</h1>
         </div>
 
         <div style="padding: 30px; background: #f9fafb;">
@@ -110,7 +107,7 @@ export async function sendCustomerConfirmation(
 
           <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #1e3a8a;">Items Ordered</h3>
-            <ul>${itemsList}</ul>
+            <ul>${customerItemsList}</ul>
 
             <hr style="margin: 20px 0;">
 
@@ -132,7 +129,7 @@ export async function sendCustomerConfirmation(
           <p>Questions? Reply to this email or contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
 
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-            Thank you for choosing Slumber Magic Orlando!<br>
+            Thank you for choosing Magical Slumber Orlando!<br>
             We hope you have a magical, well-rested vacation!
           </p>
         </div>

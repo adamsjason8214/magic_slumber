@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, toStripeAmount } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
             name: product.name,
             description: `${nights} night rental`,
           },
-          unit_amount: toStripeAmount(product.price * nights),
+          unit_amount: toStripeAmount(calculateItemPrice(product, nights)),
         },
         quantity: item.quantity,
       };

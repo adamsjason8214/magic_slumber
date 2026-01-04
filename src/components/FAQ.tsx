@@ -50,7 +50,7 @@ export default function FAQ() {
             Frequently Asked <span className="gradient-text">Questions</span>
           </h2>
           <p className="text-gray-400">
-            Everything you need to know about renting with Slumber Magic Orlando.
+            Everything you need to know about renting with Magical Slumber Orlando.
           </p>
         </div>
 

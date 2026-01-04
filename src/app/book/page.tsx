@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
 import { Product, CartItem } from "@/types";
 import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2 } from "lucide-react";
 
@@ -76,7 +76,7 @@ export default function BookPage() {
   };
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + item.product.price * item.quantity * nights,
+    (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
     0
   );
   const total = subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT;
@@ -205,7 +205,10 @@ export default function BookPage() {
                         <h3 className="font-semibold mb-2">{product.name}</h3>
                         <p className="text-gray-400 text-sm mb-4">{product.description}</p>
                         <div className="flex items-center justify-between">
-                          <span className="text-blue-500 font-bold">${product.price}/night</span>
+                          <div>
+                            <span className="text-blue-500 font-bold">${product.basePrice}</span>
+                            <span className="text-gray-400 text-sm">/{product.baseNights} nights</span>
+                          </div>
                           {inCart ? (
                             <div className="flex items-center space-x-2">
                               <button
@@ -527,12 +530,15 @@ export default function BookPage() {
                       <div className="flex-1">
                         <p className="font-medium">{item.product.name}</p>
                         <p className="text-sm text-gray-400">
-                          ${item.product.price} x {item.quantity} x {nights} night{nights > 1 ? "s" : ""}
+                          {item.quantity > 1 ? `${item.quantity} x ` : ""}
+                          {nights <= item.product.baseNights
+                            ? `$${item.product.basePrice} (${nights} night${nights > 1 ? "s" : ""})`
+                            : `$${item.product.basePrice} + $${item.product.additionalNightPrice} x ${nights - item.product.baseNights} extra`}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className="font-medium">
-                          ${(item.product.price * item.quantity * nights).toFixed(2)}
+                          ${(calculateItemPrice(item.product, nights) * item.quantity).toFixed(2)}
                         </span>
                         <button
                           onClick={() => removeFromCart(item.product.id)}

@@ -15,7 +15,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center space-x-2">
             <Moon className="h-8 w-8 text-blue-500" />
             <span className="text-xl font-bold tracking-tight">
-              SLUMBER <span className="text-blue-500">MAGIC</span>
+              MAGICAL <span className="text-blue-500">SLUMBER</span>
             </span>
           </Link>
 
@@ -29,6 +29,9 @@ export default function Navbar() {
             </Link>
             <Link href="#pricing" className="text-gray-300 hover:text-white transition-colors">
               Pricing
+            </Link>
+            <Link href="#reviews" className="text-gray-300 hover:text-white transition-colors">
+              Reviews
             </Link>
             <Link href="#faq" className="text-gray-300 hover:text-white transition-colors">
               FAQ
@@ -75,6 +78,13 @@ export default function Navbar() {
               className="block text-gray-300 hover:text-white transition-colors"
             >
               Pricing
+            </Link>
+            <Link
+              href="#reviews"
+              onClick={() => setIsOpen(false)}
+              className="block text-gray-300 hover:text-white transition-colors"
+            >
+              Reviews
             </Link>
             <Link
               href="#faq"

@@ -11,12 +11,6 @@ export default function Hero() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center space-x-2 bg-white/5 border border-white/10 rounded-full px-4 py-2 mb-8 backdrop-blur-sm">
-          <Star className="h-4 w-4 text-yellow-400" />
-          <span className="text-sm text-gray-300">Trusted by 500+ Orlando families</span>
-        </div>
-
         {/* Main headline */}
         <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up">
           Sleep Like Magic

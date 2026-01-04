@@ -5,7 +5,9 @@ export const products: Product[] = [
     id: "slumber-pod",
     name: "Slumber Pod",
     description: "The original blackout sleep pod for babies and toddlers. Creates a dark, private sleep space anywhere.",
-    price: 25,
+    basePrice: 50,
+    baseNights: 3,
+    additionalNightPrice: 10,
     image: "/images/slumber-pod.jpg",
     features: [
       "Fits over most pack n plays and travel cribs",
@@ -16,24 +18,28 @@ export const products: Product[] = [
     ],
   },
   {
-    id: "portable-fan",
-    name: "Portable White Noise Fan",
-    description: "Whisper-quiet fan that provides soothing white noise and air circulation for better sleep.",
-    price: 10,
+    id: "fan-sound-machine",
+    name: "Fan & Sound Machine",
+    description: "Whisper-quiet fan with built-in sound machine that provides soothing white noise and air circulation for better sleep.",
+    basePrice: 15,
+    baseNights: 3,
+    additionalNightPrice: 5,
     image: "/images/fan.jpg",
     features: [
       "USB rechargeable",
       "Multiple speed settings",
+      "Built-in sound machine",
       "Natural white noise",
       "Compact and portable",
-      "8+ hours battery life",
     ],
   },
   {
     id: "baby-monitor",
     name: "Video Baby Monitor",
     description: "HD video monitor with night vision so you can keep an eye on your little one from anywhere in your suite.",
-    price: 15,
+    basePrice: 30,
+    baseNights: 3,
+    additionalNightPrice: 8,
     image: "/images/monitor.jpg",
     features: [
       "HD video with night vision",
@@ -47,7 +53,9 @@ export const products: Product[] = [
     id: "toddler-mattress",
     name: "Toddler Travel Mattress",
     description: "Comfortable, portable mattress perfect for toddlers who have outgrown the pack n play.",
-    price: 20,
+    basePrice: 40,
+    baseNights: 3,
+    additionalNightPrice: 10,
     image: "/images/mattress.jpg",
     features: [
       "Memory foam comfort",
@@ -62,6 +70,14 @@ export const products: Product[] = [
 export const DELIVERY_FEE = 15;
 export const DEPOSIT_AMOUNT = 50; // Refundable security deposit
 
+export function calculateItemPrice(product: Product, nights: number): number {
+  if (nights <= product.baseNights) {
+    return product.basePrice;
+  }
+  const additionalNights = nights - product.baseNights;
+  return product.basePrice + additionalNights * product.additionalNightPrice;
+}
+
 export function calculateOrderTotal(
   items: { product: Product; quantity: number; nights: number }[]
 ): {
@@ -71,7 +87,7 @@ export function calculateOrderTotal(
   total: number;
 } {
   const subtotal = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity * item.nights,
+    (sum, item) => sum + calculateItemPrice(item.product, item.nights) * item.quantity,
     0
   );
 

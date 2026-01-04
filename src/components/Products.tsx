@@ -6,7 +6,7 @@ import Link from "next/link";
 
 const iconMap: { [key: string]: React.ReactNode } = {
   "slumber-pod": <Moon className="h-12 w-12" />,
-  "portable-fan": <Fan className="h-12 w-12" />,
+  "fan-sound-machine": <Fan className="h-12 w-12" />,
   "baby-monitor": <Monitor className="h-12 w-12" />,
   "toddler-mattress": <BedDouble className="h-12 w-12" />,
 };
@@ -43,9 +43,14 @@ export default function Products() {
               <p className="text-gray-400 text-sm mb-4">{product.description}</p>
 
               {/* Price */}
-              <div className="flex items-baseline space-x-1 mb-4">
-                <span className="text-2xl font-bold text-blue-500">${product.price}</span>
-                <span className="text-gray-500">/night</span>
+              <div className="mb-4">
+                <div className="flex items-baseline space-x-1">
+                  <span className="text-2xl font-bold text-blue-500">${product.basePrice}</span>
+                  <span className="text-gray-500">for {product.baseNights} nights</span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  +${product.additionalNightPrice}/night after
+                </div>
               </div>
 
               {/* Features */}

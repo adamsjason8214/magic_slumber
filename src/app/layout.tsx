@@ -4,11 +4,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Slumber Magic Orlando | Premium Sleep Pod Rentals",
+  title: "Magical Slumber Orlando | Premium Sleep Pod Rentals",
   description: "Rent premium Slumber Pods, fans, baby monitors, and toddler mattresses for your Orlando resort stay. Convenient delivery to Disney, Universal, and all Orlando area resorts.",
   keywords: "slumber pod rental, orlando, disney, universal, baby sleep, travel crib, toddler mattress, baby monitor rental",
   openGraph: {
-    title: "Slumber Magic Orlando | Premium Sleep Pod Rentals",
+    title: "Magical Slumber Orlando | Premium Sleep Pod Rentals",
     description: "Make your Orlando vacation magical with restful sleep for the whole family.",
     type: "website",
   },

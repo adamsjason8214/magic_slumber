@@ -11,7 +11,7 @@ export default function Footer() {
             <div className="flex items-center space-x-2 mb-4">
               <Moon className="h-8 w-8 text-blue-500" />
               <span className="text-xl font-bold tracking-tight">
-                SLUMBER <span className="text-blue-500">MAGIC</span>
+                MAGICAL <span className="text-blue-500">SLUMBER</span>
               </span>
             </div>
             <p className="text-gray-400 max-w-md">
@@ -40,6 +40,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="#reviews" className="text-gray-400 hover:text-white transition-colors">
+                  Reviews
+                </Link>
+              </li>
+              <li>
                 <Link href="#faq" className="text-gray-400 hover:text-white transition-colors">
                   FAQ
                 </Link>
@@ -58,8 +63,8 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-3 text-gray-400">
                 <Mail className="h-5 w-5 text-blue-500" />
-                <a href="mailto:slumbermagicorlando@gmail.com" className="hover:text-white transition-colors">
-                  slumbermagicorlando@gmail.com
+                <a href="mailto:magicalslumberorlando@gmail.com" className="hover:text-white transition-colors">
+                  magicalslumberorlando@gmail.com
                 </a>
               </li>
               <li className="flex items-center space-x-3 text-gray-400">
@@ -71,7 +76,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-12 pt-8 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Slumber Magic Orlando. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Magical Slumber Orlando. All rights reserved.</p>
         </div>
       </div>
     </footer>
