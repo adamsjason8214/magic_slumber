@@ -29,7 +29,7 @@ export async function sendOrderNotification(
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
-    to: "slumbermagicorlando@gmail.com",
+    to: "magicalslumberorlando@gmail.com",
     subject: `New Order #${orderId} - ${booking.firstName} ${booking.lastName}`,
     html: `
       <h1>New Slumber Magic Order!</h1>
@@ -129,7 +129,7 @@ export async function sendCustomerConfirmation(
             </ul>
           </div>
 
-          <p>Questions? Reply to this email or contact us at <a href="mailto:slumbermagicorlando@gmail.com">slumbermagicorlando@gmail.com</a></p>
+          <p>Questions? Reply to this email or contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
 
           <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
             Thank you for choosing Slumber Magic Orlando!<br>
