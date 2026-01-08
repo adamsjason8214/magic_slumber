@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+function getRedis() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    throw new Error("Redis credentials not configured");
+  }
+  return new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  });
+}
 
 export interface Review {
   id: string;
@@ -21,6 +26,7 @@ export interface Review {
 // GET - Fetch all reviews
 export async function GET() {
   try {
+    const redis = getRedis();
     const reviews = await redis.get<Review[]>("reviews") || [];
     return NextResponse.json(reviews);
   } catch (error) {
@@ -52,6 +58,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     };
 
+    const redis = getRedis();
     const reviews = await redis.get<Review[]>("reviews") || [];
     reviews.unshift(newReview);
     await redis.set("reviews", reviews);
@@ -77,6 +84,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const redis = getRedis();
     const reviews = await redis.get<Review[]>("reviews") || [];
     const reviewIndex = reviews.findIndex(r => r.id === reviewId);
 
