@@ -25,7 +25,7 @@ export interface BookingFormData {
   // Resort Info
   resortName: string;
   resortAddress: string;
-  roomNumber: string;
+  agentReferralEmail?: string;
 
   // Dates
   checkInDate: string;
@@ -46,6 +46,8 @@ export interface OrderSummary {
   items: CartItem[];
   subtotal: number;
   deliveryFee: number;
+  surcharge: number;
+  salesTax: number;
   deposit: number;
   total: number;
   nights: number;

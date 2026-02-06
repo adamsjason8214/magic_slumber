@@ -9,8 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mapbox/search-js-react": "^1.5.1",
     "@stripe/stripe-js": "^8.6.0",
+    "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.1",
+    "@vercel/analytics": "^1.6.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",

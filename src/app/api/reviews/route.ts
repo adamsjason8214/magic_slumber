@@ -35,6 +35,12 @@ export async function GET() {
   }
 }
 
+// Sanitize string input - remove any potential HTML/script tags
+function sanitizeString(str: string | undefined | null): string {
+  if (!str) return "";
+  return str.replace(/<[^>]*>/g, "").trim().substring(0, 1000);
+}
+
 // POST - Submit a new review (auto-approved)
 export async function POST(request: NextRequest) {
   try {
@@ -48,13 +54,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sanitize all user input
+    const sanitizedName = sanitizeString(name).substring(0, 100);
+    const sanitizedLocation = sanitizeString(location).substring(0, 100) || "Orlando, FL";
+    const sanitizedText = sanitizeString(text);
+
     const newReview: Review = {
       id: `review_${Date.now()}`,
-      name,
+      name: sanitizedName,
       email: email || undefined,
-      location: location || "Orlando, FL",
-      rating: Math.min(5, Math.max(1, rating)),
-      text,
+      location: sanitizedLocation,
+      rating: Math.min(5, Math.max(1, parseInt(rating) || 5)),
+      text: sanitizedText,
       createdAt: new Date().toISOString(),
     };
 
@@ -79,8 +90,8 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { reviewId, response, adminKey } = body;
 
-    // Simple admin key check (you can change this in Vercel env vars)
-    if (adminKey !== process.env.ADMIN_KEY && adminKey !== "magicalslumber2024") {
+    // Admin key check - ONLY use environment variable
+    if (!process.env.ADMIN_KEY || adminKey !== process.env.ADMIN_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

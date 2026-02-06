@@ -6,7 +6,7 @@ import { ChevronDown } from "lucide-react";
 const faqs = [
   {
     question: "What areas do you deliver to?",
-    answer: "We deliver to all major resorts in the Orlando area, including Walt Disney World Resort hotels, Universal Orlando Resort hotels, and surrounding area hotels and vacation rentals. If you're unsure if we deliver to your location, just ask!",
+    answer: "We deliver to all major resorts in the Orlando area, including Walt Disney World Resort hotels, Universal Orlando Resort hotels, Legoland Florida Resort area, and surrounding area hotels and vacation rentals. If you're unsure if we deliver to your location, just ask!",
   },
   {
     question: "How does the security deposit work?",

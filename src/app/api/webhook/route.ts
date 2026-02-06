@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
+import {
+  SALES_TAX_RATE,
+  SURCHARGE_RATE,
+  getDeliveryFee,
+  calculateBundlePrice,
+  calculatePodPrice,
+  calculateTotPrice,
+  calculateTotAddonPrice,
+} from "@/lib/products";
 import { sendOrderNotification, sendCustomerConfirmation } from "@/lib/email";
-import { BookingFormData, CartItem, OrderSummary } from "@/types";
+import { BookingFormData, OrderSummary } from "@/types";
 import Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -43,22 +51,24 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Parse items from metadata
-      const itemsData = JSON.parse(metadata.items || "[]");
       const nights = parseInt(metadata.nights || "1");
+      const orderType = metadata.orderType as "bundle" | "pod" | "tot";
+      const hasTotAddon = metadata.hasTotAddon === "true";
 
-      // Build cart items
-      const cartItems: CartItem[] = itemsData.map((item: { productId: string; quantity: number }) => {
-        const product = products.find(p => p.id === item.productId);
-        if (!product) {
-          throw new Error(`Product not found: ${item.productId}`);
-        }
-        return {
-          product,
-          quantity: item.quantity,
-          nights,
-        };
-      });
+      // Calculate prices based on order type
+      let subtotal = 0;
+      if (orderType === "bundle") {
+        subtotal = calculateBundlePrice(nights);
+      } else if (orderType === "pod") {
+        subtotal = calculatePodPrice(nights);
+      } else if (orderType === "tot") {
+        subtotal = calculateTotPrice(nights);
+      }
+
+      // Add Slumber Tot add-on if applicable
+      if (hasTotAddon && (orderType === "bundle" || orderType === "pod")) {
+        subtotal += calculateTotAddonPrice(nights);
+      }
 
       // Build booking data
       const booking: BookingFormData = {
@@ -68,41 +78,63 @@ export async function POST(request: NextRequest) {
         phone: metadata.phone || "",
         resortName: metadata.resortName || "",
         resortAddress: metadata.resortAddress || "",
-        roomNumber: metadata.roomNumber || "",
+        agentReferralEmail: metadata.agentReferralEmail || "",
         checkInDate: metadata.checkInDate || "",
         checkOutDate: metadata.checkOutDate || "",
         deliveryTime: metadata.deliveryTime || "",
         specialRequests: metadata.specialRequests || "",
-        items: cartItems,
+        items: [], // Items handled differently now
       };
 
-      // Calculate order summary
-      const subtotal = cartItems.reduce(
-        (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
-        0
-      );
+      // Determine delivery fee based on nights
+      const deliveryFee = getDeliveryFee(nights);
+
+      // Calculate 7% sales tax (on subtotal only, not on delivery fee)
+      const salesTax = subtotal * SALES_TAX_RATE;
+
+      // Calculate 3% processing fee (on subtotal + delivery + tax)
+      const surcharge = (subtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
 
       const orderSummary: OrderSummary = {
-        items: cartItems,
+        items: [],
         subtotal,
-        deliveryFee: DELIVERY_FEE,
-        deposit: DEPOSIT_AMOUNT,
-        total: subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT,
+        deliveryFee,
+        surcharge,
+        salesTax,
+        deposit: 0,
+        total: subtotal + deliveryFee + salesTax + surcharge,
         nights,
       };
 
       // Generate order ID
       const orderId = `SM-${Date.now().toString(36).toUpperCase()}`;
 
-      // Send emails
-      await Promise.all([
-        sendOrderNotification(booking, orderSummary, orderId),
-        sendCustomerConfirmation(booking, orderSummary, orderId),
-      ]);
+      // Add order description to booking for email display
+      const orderDescription = metadata.orderDescription || `${orderType} rental`;
 
-      console.log(`Order ${orderId} completed and emails sent`);
+      // Send emails with order description
+      console.log(`Attempting to send emails for order ${orderId} to ${booking.email}`);
+
+      try {
+        await Promise.all([
+          sendOrderNotification(booking, orderSummary, orderId, orderDescription),
+          sendCustomerConfirmation(booking, orderSummary, orderId, orderDescription),
+        ]);
+        console.log(`Order ${orderId} completed and emails sent successfully`);
+      } catch (emailErr) {
+        console.error(`Email sending failed for order ${orderId}:`, emailErr);
+        // Log the specific error for debugging
+        if (emailErr instanceof Error) {
+          console.error(`Email error message: ${emailErr.message}`);
+          console.error(`Email error stack: ${emailErr.stack}`);
+        }
+      }
     } catch (err) {
       console.error("Error processing order:", err);
+      if (err instanceof Error) {
+        console.error(`Order processing error message: ${err.message}`);
+        console.error(`Order processing error stack: ${err.stack}`);
+      }
       // Don't return error - we still received the webhook
     }
   }

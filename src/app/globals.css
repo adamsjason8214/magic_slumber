@@ -91,3 +91,9 @@ html {
   background-size: 350px 200px;
   background-color: #000;
 }
+
+/* Make date picker calendar icon visible on dark background */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}

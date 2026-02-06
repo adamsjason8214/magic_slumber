@@ -3,33 +3,88 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, Mail, Calendar, MapPin, ArrowRight } from "lucide-react";
+import { CheckCircle, XCircle, Mail, Calendar, MapPin, ArrowRight, Loader2 } from "lucide-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  const [isVerified, setIsVerified] = useState(false);
+  const [verificationState, setVerificationState] = useState<"loading" | "verified" | "failed">("loading");
+  const [orderDescription, setOrderDescription] = useState("");
 
   useEffect(() => {
-    // In production, you could verify the session with Stripe here
-    if (sessionId) {
-      setIsVerified(true);
+    async function verifySession() {
+      if (!sessionId) {
+        setVerificationState("failed");
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/verify-session?session_id=${sessionId}`);
+        const data = await response.json();
+
+        if (data.verified) {
+          setVerificationState("verified");
+          setOrderDescription(data.orderDescription || "");
+        } else {
+          setVerificationState("failed");
+        }
+      } catch (error) {
+        console.error("Verification error:", error);
+        setVerificationState("failed");
+      }
     }
+
+    verifySession();
   }, [sessionId]);
 
-  if (!sessionId) {
+  // Loading state
+  if (verificationState === "loading") {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-400">Invalid session. Please try booking again.</p>
-          <Link href="/book" className="text-blue-500 hover:underline mt-4 inline-block">
-            Return to booking
-          </Link>
+          <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-400">Verifying your payment...</p>
         </div>
       </div>
     );
   }
 
+  // Failed state
+  if (verificationState === "failed") {
+    return (
+      <div className="min-h-screen bg-black pt-24 pb-16">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500/20 rounded-full mb-6">
+              <XCircle className="h-12 w-12 text-red-500" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">
+              Payment <span className="text-red-500">Not Verified</span>
+            </h1>
+            <p className="text-gray-400 text-lg mb-6">
+              We couldn&apos;t verify your payment. If you believe this is an error, please contact us.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/book"
+                className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              >
+                Try Again
+              </Link>
+              <a
+                href="mailto:magicalslumberorlando@gmail.com"
+                className="inline-flex items-center justify-center px-6 py-3 border border-white/20 hover:border-white/40 rounded-lg transition-colors"
+              >
+                Contact Support
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Success state
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,6 +99,11 @@ function SuccessContent() {
           <p className="text-gray-400 text-lg">
             Thank you for your order. Your magical sleep setup is on its way!
           </p>
+          {orderDescription && (
+            <p className="text-gray-500 text-sm mt-2">
+              Order: {orderDescription}
+            </p>
+          )}
         </div>
 
         {/* Confirmation details */}
@@ -90,21 +150,12 @@ function SuccessContent() {
           </div>
         </div>
 
-        {/* Important info */}
-        <div className="mt-6 bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
-          <h3 className="font-semibold mb-2">Security Deposit</h3>
-          <p className="text-gray-400 text-sm">
-            Your $50 security deposit will be automatically refunded within 5-7 business days
-            after items are returned in good condition on your checkout date.
-          </p>
-        </div>
-
         {/* Contact */}
         <div className="mt-6 text-center">
           <p className="text-gray-400 text-sm mb-4">
             Questions? Contact us at{" "}
-            <a href="mailto:slumbermagicorlando@gmail.com" className="text-blue-500 hover:underline">
-              slumbermagicorlando@gmail.com
+            <a href="mailto:magicalslumberorlando@gmail.com" className="text-blue-500 hover:underline">
+              magicalslumberorlando@gmail.com
             </a>
           </p>
 
@@ -126,7 +177,7 @@ export default function SuccessPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-black flex items-center justify-center">
-          <div className="text-gray-400">Loading...</div>
+          <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />
         </div>
       }
     >

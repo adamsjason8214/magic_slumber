@@ -1,4 +1,7 @@
+"use client";
+
 import { Calendar, CreditCard, Truck, Moon } from "lucide-react";
+import { useEffect } from "react";
 
 const steps = [
   {
@@ -24,6 +27,25 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  // Load Instagram embed script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.instagram.com/embed.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    // Process embeds when script loads
+    script.onload = () => {
+      if ((window as unknown as { instgrm?: { Embeds?: { process?: () => void } } }).instgrm?.Embeds?.process) {
+        (window as unknown as { instgrm: { Embeds: { process: () => void } } }).instgrm.Embeds.process();
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
     <section id="how-it-works" className="py-24 bg-gradient-to-b from-black to-zinc-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,6 +85,48 @@ export default function HowItWorks() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Instagram Video Section */}
+        <div className="mt-20 text-center">
+          <h3 className="text-2xl sm:text-3xl font-bold mb-4">
+            See It <span className="gradient-text">In Action</span>
+          </h3>
+          <p className="text-gray-400 max-w-xl mx-auto mb-8">
+            Watch how easy it is to set up the Slumber Pod for your little one.
+          </p>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-8">
+            <blockquote
+              className="instagram-media"
+              data-instgrm-permalink="https://www.instagram.com/p/DTnehakjjKk/"
+              data-instgrm-version="14"
+              style={{
+                background: "#000",
+                border: "0",
+                borderRadius: "12px",
+                margin: "0",
+                maxWidth: "400px",
+                minWidth: "300px",
+                padding: "0",
+                width: "100%",
+              }}
+            />
+            <blockquote
+              className="instagram-media"
+              data-instgrm-permalink="https://www.instagram.com/p/DTp3jNjDj9O/"
+              data-instgrm-version="14"
+              style={{
+                background: "#000",
+                border: "0",
+                borderRadius: "12px",
+                margin: "0",
+                maxWidth: "400px",
+                minWidth: "300px",
+                padding: "0",
+                width: "100%",
+              }}
+            />
           </div>
         </div>
       </div>
