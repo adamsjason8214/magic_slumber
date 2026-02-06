@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, toStripeAmount } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode } from "@/lib/products";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { items, customerInfo, nights } = body;
+    const { items, customerInfo, nights, promoCode } = body;
+
+    // Validate promo code if provided
+    const promo = promoCode ? validatePromoCode(promoCode) : null;
 
     // Validate items
     if (!items || items.length === 0) {
@@ -22,14 +25,17 @@ export async function POST(request: NextRequest) {
         throw new Error(`Product not found: ${item.productId}`);
       }
 
+      // Apply promo pricing if valid promo code
+      const itemPrice = promo ? promo.itemPrice : calculateItemPrice(product, nights);
+
       return {
         price_data: {
           currency: "usd",
           product_data: {
             name: product.name,
-            description: `${nights} night rental`,
+            description: promo ? `${nights} night rental (TEST PRICE)` : `${nights} night rental`,
           },
-          unit_amount: toStripeAmount(calculateItemPrice(product, nights)),
+          unit_amount: toStripeAmount(itemPrice),
         },
         quantity: item.quantity,
       };
@@ -83,6 +89,7 @@ export async function POST(request: NextRequest) {
         specialRequests: customerInfo.specialRequests || "",
         nights: nights.toString(),
         items: JSON.stringify(items),
+        promoCode: promoCode || "",
       },
     });
 

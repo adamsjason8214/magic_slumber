@@ -37,6 +37,9 @@ export interface BookingFormData {
 
   // Special requests
   specialRequests?: string;
+
+  // Promo code
+  promoCode?: string;
 }
 
 export interface OrderSummary {

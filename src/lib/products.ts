@@ -98,3 +98,12 @@ export function calculateOrderTotal(
     total: subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT,
   };
 }
+
+// Promo codes for testing
+export const PROMO_CODES: Record<string, { type: 'test'; itemPrice: number }> = {
+  'noahdavid2026': { type: 'test', itemPrice: 0.50 }
+};
+
+export function validatePromoCode(code: string): { type: 'test'; itemPrice: number } | null {
+  return PROMO_CODES[code.toLowerCase()] || null;
+}

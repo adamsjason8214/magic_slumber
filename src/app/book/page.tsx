@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode } from "@/lib/products";
 import { Product, CartItem } from "@/types";
-import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag } from "lucide-react";
 
 export default function BookPage() {
   const [step, setStep] = useState(1);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoApplied, setPromoApplied] = useState<{ type: 'test'; itemPrice: number } | null>(null);
+  const [promoError, setPromoError] = useState("");
 
   // Form data
   const [formData, setFormData] = useState({
@@ -76,10 +79,31 @@ export default function BookPage() {
   };
 
   const subtotal = cart.reduce(
-    (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
+    (sum, item) => {
+      if (promoApplied) {
+        return sum + promoApplied.itemPrice * item.quantity;
+      }
+      return sum + calculateItemPrice(item.product, nights) * item.quantity;
+    },
     0
   );
   const total = subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT;
+
+  const handleApplyPromo = () => {
+    setPromoError("");
+    const promo = validatePromoCode(promoCode);
+    if (promo) {
+      setPromoApplied(promo);
+    } else {
+      setPromoError("Invalid promo code");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoApplied(null);
+    setPromoCode("");
+    setPromoError("");
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -101,6 +125,7 @@ export default function BookPage() {
           })),
           customerInfo: formData,
           nights,
+          promoCode: promoApplied ? promoCode : undefined,
         }),
       });
 
@@ -474,6 +499,47 @@ export default function BookPage() {
                   </div>
                 </div>
 
+                {/* Promo Code */}
+                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                  <h3 className="font-semibold mb-4 flex items-center">
+                    <Tag className="h-5 w-5 mr-2 text-blue-500" />
+                    Promo Code
+                  </h3>
+                  {promoApplied ? (
+                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                      <div>
+                        <p className="text-green-400 font-medium">Test discount applied!</p>
+                        <p className="text-sm text-gray-400">All items set to $0.50</p>
+                      </div>
+                      <button
+                        onClick={handleRemovePromo}
+                        className="text-gray-400 hover:text-red-400 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        className="flex-1 bg-black border border-white/20 rounded-lg px-4 py-2 focus:border-blue-500 focus:outline-none"
+                      />
+                      <button
+                        onClick={handleApplyPromo}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg transition-colors"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  )}
+                  {promoError && (
+                    <p className="text-red-400 text-sm mt-2">{promoError}</p>
+                  )}
+                </div>
+
                 {/* Payment info */}
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-6">
                   <h3 className="font-semibold mb-2">Secure Payment with Stripe</h3>
@@ -531,14 +597,16 @@ export default function BookPage() {
                         <p className="font-medium">{item.product.name}</p>
                         <p className="text-sm text-gray-400">
                           {item.quantity > 1 ? `${item.quantity} x ` : ""}
-                          {nights <= item.product.baseNights
-                            ? `$${item.product.basePrice} (${nights} night${nights > 1 ? "s" : ""})`
-                            : `$${item.product.basePrice} + $${item.product.additionalNightPrice} x ${nights - item.product.baseNights} extra`}
+                          {promoApplied
+                            ? `$${promoApplied.itemPrice.toFixed(2)} (test price)`
+                            : nights <= item.product.baseNights
+                              ? `$${item.product.basePrice} (${nights} night${nights > 1 ? "s" : ""})`
+                              : `$${item.product.basePrice} + $${item.product.additionalNightPrice} x ${nights - item.product.baseNights} extra`}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="font-medium">
-                          ${(calculateItemPrice(item.product, nights) * item.quantity).toFixed(2)}
+                        <span className={`font-medium ${promoApplied ? "text-green-400" : ""}`}>
+                          ${(promoApplied ? promoApplied.itemPrice * item.quantity : calculateItemPrice(item.product, nights) * item.quantity).toFixed(2)}
                         </span>
                         <button
                           onClick={() => removeFromCart(item.product.id)}
