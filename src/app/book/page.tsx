@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
 import { Product, CartItem } from "@/types";
 import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag } from "lucide-react";
 
@@ -11,7 +11,7 @@ export default function BookPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [promoCode, setPromoCode] = useState("");
-  const [promoApplied, setPromoApplied] = useState<{ type: 'test'; itemPrice: number } | null>(null);
+  const [promoApplied, setPromoApplied] = useState<PromoCode | null>(null);
   const [promoError, setPromoError] = useState("");
 
   // Form data
@@ -78,20 +78,19 @@ export default function BookPage() {
     }
   };
 
-  const subtotal = cart.reduce(
-    (sum, item) => {
-      if (promoApplied) {
-        return sum + promoApplied.itemPrice * item.quantity;
-      }
-      return sum + calculateItemPrice(item.product, nights) * item.quantity;
-    },
+  const baseSubtotal = cart.reduce(
+    (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
     0
   );
+
+  // Apply promo discount
+  const promoResult = promoApplied && promoCode ? calculatePromoDiscount(promoCode, baseSubtotal, nights) : { discountAmount: 0, isFixedTotal: false };
+  const subtotal = promoResult.isFixedTotal ? (promoResult.fixedTotal || 0) : (baseSubtotal - promoResult.discountAmount);
   const total = subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT;
 
   const handleApplyPromo = () => {
     setPromoError("");
-    const promo = validatePromoCode(promoCode);
+    const promo = validatePromoCode(promoCode, nights);
     if (promo) {
       setPromoApplied(promo);
     } else {
@@ -598,7 +597,7 @@ export default function BookPage() {
                         <p className="text-sm text-gray-400">
                           {item.quantity > 1 ? `${item.quantity} x ` : ""}
                           {promoApplied
-                            ? `$${promoApplied.itemPrice.toFixed(2)} (test price)`
+                            ? `(${promoApplied.description})`
                             : nights <= item.product.baseNights
                               ? `$${item.product.basePrice} (${nights} night${nights > 1 ? "s" : ""})`
                               : `$${item.product.basePrice} + $${item.product.additionalNightPrice} x ${nights - item.product.baseNights} extra`}
@@ -606,7 +605,7 @@ export default function BookPage() {
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className={`font-medium ${promoApplied ? "text-green-400" : ""}`}>
-                          ${(promoApplied ? promoApplied.itemPrice * item.quantity : calculateItemPrice(item.product, nights) * item.quantity).toFixed(2)}
+                          ${calculateItemPrice(item.product, nights).toFixed(2)}
                         </span>
                         <button
                           onClick={() => removeFromCart(item.product.id)}

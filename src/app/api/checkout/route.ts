@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, toStripeAmount } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode } from "@/lib/products";
+import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode, calculatePromoDiscount } from "@/lib/products";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { items, customerInfo, nights, promoCode } = body;
 
     // Validate promo code if provided
-    const promo = promoCode ? validatePromoCode(promoCode) : null;
+    const promo = promoCode ? validatePromoCode(promoCode, nights) : null;
 
     // Validate items
     if (!items || items.length === 0) {
@@ -18,24 +18,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build line items for Stripe
-    const lineItems = items.map((item: { productId: string; quantity: number; nights: number }) => {
+    // Calculate base subtotal
+    let baseSubtotal = 0;
+    const itemsWithPrices = items.map((item: { productId: string; quantity: number; nights: number }) => {
       const product = products.find(p => p.id === item.productId);
       if (!product) {
         throw new Error(`Product not found: ${item.productId}`);
       }
+      const itemPrice = calculateItemPrice(product, nights);
+      baseSubtotal += itemPrice * item.quantity;
+      return { product, item, itemPrice };
+    });
 
-      // Apply promo pricing if valid promo code
-      const itemPrice = promo ? promo.itemPrice : calculateItemPrice(product, nights);
+    // Calculate promo discount
+    const promoResult = promoCode ? calculatePromoDiscount(promoCode, baseSubtotal, nights) : { discountAmount: 0, isFixedTotal: false };
+
+    // Build line items for Stripe
+    const lineItems = itemsWithPrices.map(({ product, item, itemPrice }: { product: typeof products[0]; item: { quantity: number }; itemPrice: number }) => {
+      // For fixed_total promo, we set a minimal price and handle the total separately
+      let finalPrice = itemPrice;
+      if (promoResult.isFixedTotal && promoResult.fixedTotal !== undefined) {
+        // Distribute the fixed total across items proportionally
+        finalPrice = (promoResult.fixedTotal / items.length) / item.quantity;
+      } else if (promo && promo.type === "percentage") {
+        finalPrice = itemPrice * (1 - promo.value / 100);
+      }
 
       return {
         price_data: {
           currency: "usd",
           product_data: {
             name: product.name,
-            description: promo ? `${nights} night rental (TEST PRICE)` : `${nights} night rental`,
+            description: promo ? `${nights} night rental (${promo.description})` : `${nights} night rental`,
           },
-          unit_amount: toStripeAmount(itemPrice),
+          unit_amount: toStripeAmount(Math.max(0.01, finalPrice)),
         },
         quantity: item.quantity,
       };

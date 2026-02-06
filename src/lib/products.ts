@@ -159,6 +159,12 @@ export const PROMO_CODES: Record<string, PromoCode> = {
     value: 0.50,         // Total becomes $0.50
     minNights: 1,        // Always valid
     description: "Special discount"
+  },
+  "noahdavid2026": {
+    type: "fixed_total",
+    value: 0.50,         // Total becomes $0.50
+    minNights: 1,        // Always valid
+    description: "Test discount"
   }
 };
 
@@ -233,13 +239,4 @@ export function calculateItemBlockPrice(product: Product, nights: number): numbe
 
 export function calculateItemPrice(product: Product, nights: number): number {
   return calculateItemBlockPrice(product, nights);
-}
-
-// Promo codes for testing
-export const PROMO_CODES: Record<string, { type: 'test'; itemPrice: number }> = {
-  'noahdavid2026': { type: 'test', itemPrice: 0.50 }
-};
-
-export function validatePromoCode(code: string): { type: 'test'; itemPrice: number } | null {
-  return PROMO_CODES[code.toLowerCase()] || null;
 }
