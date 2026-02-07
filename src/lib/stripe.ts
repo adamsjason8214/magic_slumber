@@ -1,24 +1,27 @@
 import Stripe from "stripe";
 
-// Server-side Stripe instance (lazy initialization to avoid build-time errors)
-let stripeInstance: Stripe | null = null;
-
-export function getStripe(): Stripe {
-  if (!stripeInstance) {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error("STRIPE_SECRET_KEY is not configured");
-    }
-    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Server-side Stripe instance
+function createStripeClient(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY is not configured");
   }
-  return stripeInstance;
+  return new Stripe(key);
 }
 
-// Backwards compatible export
-export const stripe = new Proxy({} as Stripe, {
-  get(_, prop) {
-    return (getStripe() as unknown as Record<string | symbol, unknown>)[prop];
+// Lazy singleton
+let _stripe: Stripe | null = null;
+
+export const stripe = {
+  get checkout() {
+    if (!_stripe) _stripe = createStripeClient();
+    return _stripe.checkout;
   },
-});
+  get webhooks() {
+    if (!_stripe) _stripe = createStripeClient();
+    return _stripe.webhooks;
+  },
+};
 
 // Calculate Stripe amount (in cents)
 export function toStripeAmount(dollars: number): number {
