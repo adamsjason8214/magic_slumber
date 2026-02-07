@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
 import { Product, CartItem } from "@/types";
-import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag } from "lucide-react";
+import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag, CheckSquare } from "lucide-react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 export default function BookPage() {
   const [step, setStep] = useState(1);
@@ -13,6 +14,7 @@ export default function BookPage() {
   const [promoCode, setPromoCode] = useState("");
   const [promoApplied, setPromoApplied] = useState<PromoCode | null>(null);
   const [promoError, setPromoError] = useState("");
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState({
@@ -427,13 +429,11 @@ export default function BookPage() {
                   </div>
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Resort Address</label>
-                    <input
-                      type="text"
-                      name="resortAddress"
+                    <AddressAutocomplete
                       value={formData.resortAddress}
-                      onChange={handleInputChange}
+                      onChange={(address) => setFormData({ ...formData, resortAddress: address })}
+                      placeholder="Start typing resort address..."
                       className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
-                      placeholder="4401 Floridian Way, Lake Buena Vista, FL"
                     />
                   </div>
                   <div>
@@ -548,6 +548,31 @@ export default function BookPage() {
                   </p>
                 </div>
 
+                {/* Terms Agreement */}
+                <div className="flex items-start space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setAgreedToTerms(!agreedToTerms)}
+                    className={`mt-0.5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                      agreedToTerms
+                        ? "bg-blue-600 border-blue-600"
+                        : "border-white/30 hover:border-white/50"
+                    }`}
+                  >
+                    {agreedToTerms && <CheckSquare className="h-4 w-4 text-white" />}
+                  </button>
+                  <label className="text-sm text-gray-400">
+                    I agree to the{" "}
+                    <a href="/terms" target="_blank" className="text-blue-400 hover:text-blue-300 underline">
+                      Terms of Service
+                    </a>{" "}
+                    and{" "}
+                    <a href="/privacy" target="_blank" className="text-blue-400 hover:text-blue-300 underline">
+                      Privacy Policy
+                    </a>
+                  </label>
+                </div>
+
                 {error && (
                   <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 text-red-400">
                     {error}
@@ -564,8 +589,8 @@ export default function BookPage() {
                   </button>
                   <button
                     onClick={handleCheckout}
-                    disabled={isLoading}
-                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                    disabled={isLoading || !agreedToTerms}
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
                   >
                     {isLoading ? (
                       <>
