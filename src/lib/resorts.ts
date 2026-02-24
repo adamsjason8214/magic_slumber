@@ -67,7 +67,6 @@ export const ORLANDO_RESORTS: Resort[] = [
   { name: "Hyatt Regency Grand Cypress", address: "1 Grand Cypress Blvd, Orlando, FL 32836" },
   { name: "Marriott's Grande Vista", address: "5925 Avenida Vista, Orlando, FL 32821" },
   { name: "Marriott's Cypress Harbour Villas", address: "11251 Harbour Villa Rd, Orlando, FL 32821" },
-  { name: "Hilton Grand Vacations SeaWorld", address: "6924 Grand Vacations Way, Orlando, FL 32821" },
   { name: "Margaritaville Resort Orlando", address: "8000 Fins Up Cir, Kissimmee, FL 34747" },
   { name: "Omni Orlando Resort at ChampionsGate", address: "1500 Masters Blvd, ChampionsGate, FL 33896" },
   { name: "Reunion Resort", address: "7593 Gathering Dr, Kissimmee, FL 34747" },
@@ -77,28 +76,68 @@ export const ORLANDO_RESORTS: Resort[] = [
   { name: "Westgate Palace Resort", address: "6145 Carrier Dr, Orlando, FL 32819" },
   { name: "Westgate Vacation Villas & Town Center", address: "7700 Westgate Blvd, Kissimmee, FL 34747" },
   { name: "Wyndham Grand Orlando Resort Bonnet Creek", address: "14651 Chelonia Pkwy, Orlando, FL 32821" },
-  { name: "Orange Lake Resort", address: "8505 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34747" },
-  { name: "Encore Resort at Reunion", address: "7635 Fairfax Dr, Kissimmee, FL 34747" },
 
-  // ===== International Drive Area =====
-  { name: "Rosen Shingle Creek", address: "9939 Universal Blvd, Orlando, FL 32819" },
-  { name: "Rosen Inn at Pointe Orlando", address: "9000 International Dr, Orlando, FL 32819" },
-  { name: "Hilton Orlando", address: "6001 Destination Pkwy, Orlando, FL 32819" },
+  // ===== LEGOLAND Resorts (Winter Haven) =====
+  { name: "LEGOLAND Florida Hotel", address: "1 Legoland Way, Winter Haven, FL 33884" },
+  { name: "LEGOLAND Pirate Island Hotel", address: "1 Legoland Way, Winter Haven, FL 33884" },
+  { name: "LEGOLAND Beach Retreat", address: "1 Legoland Way, Winter Haven, FL 33884" },
+
+  // ===== SeaWorld Area Hotels =====
   { name: "DoubleTree by Hilton at SeaWorld", address: "10100 International Dr, Orlando, FL 32821" },
   { name: "Renaissance Orlando at SeaWorld", address: "6677 Sea Harbor Dr, Orlando, FL 32821" },
+  { name: "Residence Inn Orlando at SeaWorld", address: "11000 Westwood Blvd, Orlando, FL 32821" },
+  { name: "SpringHill Suites Orlando at SeaWorld", address: "10801 International Dr, Orlando, FL 32821" },
+  { name: "Fairfield Inn & Suites Orlando at SeaWorld", address: "10815 International Dr, Orlando, FL 32821" },
+  { name: "Homewood Suites by Hilton Orlando Theme Parks", address: "11428 Marbella Palm Ct, Orlando, FL 32836" },
+  { name: "Hilton Grand Vacations SeaWorld", address: "6924 Grand Vacations Way, Orlando, FL 32821" },
 
-  // ===== Kissimmee / US-192 Corridor =====
+  // ===== International Drive / Dr. Phillips Area =====
+  { name: "Rosen Shingle Creek", address: "9939 Universal Blvd, Orlando, FL 32819" },
+  { name: "Rosen Inn at Pointe Orlando", address: "9000 International Dr, Orlando, FL 32819" },
+  { name: "Rosen Plaza Hotel", address: "9700 International Dr, Orlando, FL 32819" },
+  { name: "Rosen Centre Hotel", address: "9840 International Dr, Orlando, FL 32819" },
+  { name: "Hilton Orlando", address: "6001 Destination Pkwy, Orlando, FL 32819" },
+  { name: "Embassy Suites by Hilton Orlando I-Drive", address: "8978 International Dr, Orlando, FL 32819" },
+  { name: "Holiday Inn Resort Orlando Suites - Waterpark", address: "14500 Continental Gateway, Orlando, FL 32821" },
+  { name: "Caribe Royale Orlando", address: "8101 World Center Dr, Orlando, FL 32821" },
+  { name: "Sheraton Vistana Resort Villas", address: "8800 Vistana Centre Dr, Orlando, FL 32821" },
+  { name: "Sheraton Vistana Villages Resort Villas", address: "12401 International Dr, Orlando, FL 32821" },
+  { name: "Marriott's Harbour Lake", address: "7102 Grand Horizons Blvd, Orlando, FL 32821" },
+  { name: "Marriott Village at Little Lake Bryan", address: "8623 Vineland Ave, Orlando, FL 32821" },
+  { name: "Courtyard by Marriott Orlando Lake Buena Vista", address: "8501 Palm Pkwy, Orlando, FL 32836" },
+
+  // ===== Kissimmee Hotels & Resorts =====
   { name: "Meliá Orlando Celebration", address: "225 Celebration Pl, Kissimmee, FL 34747" },
   { name: "Bohemian Hotel Celebration", address: "700 Bloom St, Celebration, FL 34747" },
   { name: "Radisson Resort Orlando Celebration", address: "2900 Parkway Blvd, Kissimmee, FL 34747" },
+  { name: "Mystic Dunes Resort & Golf Club", address: "7600 Mystic Dunes Ln, Kissimmee, FL 34747" },
+  { name: "Maingate Lakeside Resort", address: "7769 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34747" },
+  { name: "Polynesian Isles Resort", address: "3045 Polynesian Isle Blvd, Kissimmee, FL 34746" },
+  { name: "Vacation Village at Parkway", address: "2983 Vineland Rd, Kissimmee, FL 34746" },
+  { name: "Comfort Suites Maingate East", address: "2775 Florida Plaza Blvd, Kissimmee, FL 34746" },
+  { name: "Holiday Inn Club Vacations at Orange Lake Resort", address: "8505 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34747" },
+  { name: "Treasure Cove Resort", address: "2817 N Poinciana Blvd, Kissimmee, FL 34746" },
+  { name: "Liki Tiki Village", address: "17777 Bali Blvd, Winter Garden, FL 34787" },
 
-  // ===== Vacation Home Communities =====
-  { name: "Solara Resort", address: "1177 Folly Way, Kissimmee, FL 34746" },
+  // ===== Davenport Hotels & Resorts =====
+  { name: "Providence Resort", address: "1150 S Apopka Vineland Rd, Davenport, FL 33897" },
+  { name: "Paradise Palms Resort", address: "8801 Paradise Palms Dr, Kissimmee, FL 34747" },
+  { name: "Highlands Reserve", address: "559 Highlands Reserve Blvd, Davenport, FL 33897" },
   { name: "Windsor at Westside", address: "8933 Stinger Dr, Davenport, FL 33896" },
   { name: "Solterra Resort", address: "5258 Oakbourne Ave, Davenport, FL 33837" },
   { name: "Champions Gate Resort Community", address: "1340 Errol Park Dr, Davenport, FL 33896" },
-  { name: "Storey Lake Resort", address: "4777 Storey Lake Blvd, Kissimmee, FL 34746" },
   { name: "Festival Resort", address: "800 Festival Park Ave, Davenport, FL 33837" },
+  { name: "Calabria at Westside", address: "1013 Fern Leaf Ct, Davenport, FL 33896" },
+  { name: "Bella Vida Resort", address: "501 Bella Vida Blvd, Kissimmee, FL 34746" },
+
+  // ===== Clermont Hotels & Resorts =====
+  { name: "Epic Forrest at Canyons Resort", address: "16545 Epic Forrest Dr, Clermont, FL 34714" },
+  { name: "Monumental Hotel Orlando", address: "12120 International Dr, Orlando, FL 32821" },
+
+  // ===== Vacation Home Communities =====
+  { name: "Solara Resort", address: "1177 Folly Way, Kissimmee, FL 34746" },
+  { name: "Storey Lake Resort", address: "4777 Storey Lake Blvd, Kissimmee, FL 34746" },
+  { name: "Encore Resort at Reunion", address: "7635 Fairfax Dr, Kissimmee, FL 34747" },
 ];
 
 // Search resorts by name (case-insensitive substring match)
