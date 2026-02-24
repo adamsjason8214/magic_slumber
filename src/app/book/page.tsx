@@ -5,6 +5,7 @@ import { products, DELIVERY_FEE, SALES_TAX_RATE, SURCHARGE_RATE, calculateItemPr
 import { Product, CartItem } from "@/types";
 import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag, CheckSquare } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import ResortSearch from "@/components/ResortSearch";
 
 export default function BookPage() {
   const [step, setStep] = useState(1);
@@ -428,13 +429,13 @@ export default function BookPage() {
 
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Resort Name *</label>
-                    <AddressAutocomplete
+                    <ResortSearch
                       value={formData.resortName}
                       onChange={(name) => setFormData(prev => ({ ...prev, resortName: name }))}
-                      onSelect={(suggestion) => setFormData(prev => ({
+                      onSelect={(resort) => setFormData(prev => ({
                         ...prev,
-                        resortName: suggestion.text,
-                        resortAddress: suggestion.place_name,
+                        resortName: resort.name,
+                        resortAddress: resort.address,
                       }))}
                       placeholder="Disney's Grand Floridian Resort"
                       className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
