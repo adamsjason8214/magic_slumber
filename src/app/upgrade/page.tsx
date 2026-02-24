@@ -76,7 +76,10 @@ function UpgradeContent() {
 
   const originalName = originalItem === "slumber-pod" ? "Slumber Pod" : "Slumber Tot";
   const perNight = originalItem === "slumber-pod" ? 6 : 8;
-  const upgradeTotal = perNight * nights;
+  const priceDiff = perNight * nights;
+  const upgradeTax = priceDiff * 0.07;
+  const upgradeFee = (priceDiff + upgradeTax) * 0.03;
+  const upgradeTotal = priceDiff + upgradeTax + upgradeFee;
 
   if (state === "loading") {
     return (
@@ -192,15 +195,19 @@ function UpgradeContent() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">Price difference</span>
-              <span>${perNight.toFixed(2)}/night x {nights} night{nights > 1 ? "s" : ""}</span>
+              <span>${perNight.toFixed(2)}/night x {nights} night{nights > 1 ? "s" : ""} = ${priceDiff.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-400">Delivery Fee</span>
-              <span className="text-green-400">Already paid</span>
+              <span className="text-green-400">Waived</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Tax & Service Fee</span>
-              <span className="text-green-400">Waived</span>
+              <span className="text-gray-400">Sales Tax (7%)</span>
+              <span>${upgradeTax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Service Fee (3%)</span>
+              <span>${upgradeFee.toFixed(2)}</span>
             </div>
           </div>
           <hr className="border-white/10 my-4" />

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { stripe, toStripeAmount } from "@/lib/stripe";
-import { ULTIMATE_BUNDLE_DAILY_RATE, SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE } from "@/lib/products";
+import { ULTIMATE_BUNDLE_DAILY_RATE, SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE, SALES_TAX_RATE, SURCHARGE_RATE } from "@/lib/products";
 
 const UpgradeSchema = z.object({
   originalSessionId: z.string().min(1),
@@ -50,11 +50,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order not eligible for upgrade" }, { status: 400 });
     }
 
-    // Calculate upgrade price difference (no tax, no delivery, no service fee)
+    // Calculate upgrade price difference + tax + service fee (delivery waived)
     const originalRate = upgradeableItem.productId === "slumber-pod"
       ? SLUMBER_POD_DAILY_RATE
       : SLUMBER_TOT_DAILY_RATE;
     const priceDifference = (ULTIMATE_BUNDLE_DAILY_RATE - originalRate) * nights;
+    const upgradeTax = priceDifference * SALES_TAX_RATE;
+    const upgradeSurcharge = (priceDifference + upgradeTax) * SURCHARGE_RATE;
 
     const originalProductName = upgradeableItem.productId === "slumber-pod"
       ? "Slumber Pod" : "Slumber Tot";
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
       baseUrl = "https://" + baseUrl;
     }
 
-    // Create Stripe checkout session - ONLY the price difference, no fees
+    // Create Stripe checkout session - price difference + tax + service fee, delivery waived
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
@@ -78,6 +80,28 @@ export async function POST(request: NextRequest) {
               description: `Upgrade from ${originalProductName} to Ultimate Slumber Bundle - ${nights} night${nights > 1 ? "s" : ""} ($${(ULTIMATE_BUNDLE_DAILY_RATE - originalRate).toFixed(2)}/night difference)`,
             },
             unit_amount: toStripeAmount(priceDifference),
+          },
+          quantity: 1,
+        },
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Sales Tax (7%)",
+              description: "Florida sales tax",
+            },
+            unit_amount: toStripeAmount(upgradeTax),
+          },
+          quantity: 1,
+        },
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Service Fee (3%)",
+              description: "Processing fee",
+            },
+            unit_amount: toStripeAmount(upgradeSurcharge),
           },
           quantity: 1,
         },

@@ -1,5 +1,5 @@
 import { BookingFormData, OrderSummary } from "@/types";
-import { FREE_DELIVERY_MIN_DAYS, SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE, ULTIMATE_BUNDLE_DAILY_RATE } from "./products";
+import { FREE_DELIVERY_MIN_DAYS, SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE, ULTIMATE_BUNDLE_DAILY_RATE, SALES_TAX_RATE, SURCHARGE_RATE } from "./products";
 
 // Mailgun configuration
 const MAILGUN_API_KEY = (process.env.MAILGUN_API_KEY || "").trim();
@@ -130,24 +130,29 @@ export async function sendCustomerConfirmation(
   if (upgradeInfo?.eligible) {
     const originalRate = upgradeInfo.originalProductId === "slumber-pod" ? SLUMBER_POD_DAILY_RATE : SLUMBER_TOT_DAILY_RATE;
     const perNight = ULTIMATE_BUNDLE_DAILY_RATE - originalRate;
-    const upgradeTotal = perNight * upgradeInfo.nights;
+    const priceDiff = perNight * upgradeInfo.nights;
+    const upgradeTax = priceDiff * SALES_TAX_RATE;
+    const upgradeFee = (priceDiff + upgradeTax) * SURCHARGE_RATE;
+    const upgradeTotal = priceDiff + upgradeTax + upgradeFee;
     const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || "https://magicalslumber.com").trim().replace(/\/$/, "");
     const upgradeUrl = `${baseUrl}/upgrade?session_id=${upgradeInfo.sessionId}`;
 
     upgradeCta = `
-        <div style="background: linear-gradient(135deg, #1e3a8a, #6366f1); padding: 24px; border-radius: 8px; margin: 20px 0; text-align: center; color: white;">
-          <h3 style="color: white; margin-top: 0;">Upgrade to the Ultimate Slumber Bundle!</h3>
-          <p style="color: #e0e7ff;">Get the complete sleep setup: Slumber Pod + Portable Fan + Sound Machine + Video Baby Monitor</p>
-          <p style="font-size: 22px; font-weight: bold; color: white; margin: 12px 0;">Only $${upgradeTotal.toFixed(2)} more</p>
-          <p style="color: #c7d2fe; font-size: 14px; margin-bottom: 16px;">$${perNight.toFixed(2)}/night x ${upgradeInfo.nights} night${upgradeInfo.nights > 1 ? "s" : ""} &mdash; No additional fees!</p>
-          <a href="${upgradeUrl}" style="display: inline-block; background: white; color: #1e3a8a; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: bold;">Upgrade Now &rarr;</a>
+        <div style="background: #1e3a8a; padding: 24px; border-radius: 8px; margin: 20px 0; text-align: center;">
+          <h3 style="color: #ffffff; margin-top: 0; font-size: 20px;">Upgrade to the Ultimate Slumber Bundle!</h3>
+          <p style="color: #ffffff; font-size: 15px; margin: 12px 0;">Get the complete sleep setup: Slumber Pod + Portable Fan + Sound Machine + Video Baby Monitor</p>
+          <p style="font-size: 24px; font-weight: bold; color: #ffffff; margin: 16px 0;">Only $${upgradeTotal.toFixed(2)} more</p>
+          <p style="color: #ffffff; font-size: 14px; margin-bottom: 20px;">$${perNight.toFixed(2)}/night x ${upgradeInfo.nights} night${upgradeInfo.nights > 1 ? "s" : ""} + tax &amp; fee &mdash; Delivery waived!</p>
+          <a href="${upgradeUrl}" style="display: inline-block; background: #ffffff; color: #1e3a8a; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px;">Upgrade Now &rarr;</a>
         </div>`;
 
     upgradeCtaText = `
+----------------------------------------------
 UPGRADE TO THE ULTIMATE SLUMBER BUNDLE!
 Get the complete sleep setup: Slumber Pod + Portable Fan + Sound Machine + Video Baby Monitor
-Only $${upgradeTotal.toFixed(2)} more ($${perNight.toFixed(2)}/night x ${upgradeInfo.nights} night${upgradeInfo.nights > 1 ? "s" : ""} - No additional fees!)
+Only $${upgradeTotal.toFixed(2)} more ($${perNight.toFixed(2)}/night x ${upgradeInfo.nights} night${upgradeInfo.nights > 1 ? "s" : ""} + tax & fee - Delivery waived!)
 Upgrade now: ${upgradeUrl}
+----------------------------------------------
 `;
   }
   const subject = `Order Confirmed! Magical Slumber Orlando #${orderId}`;
@@ -159,23 +164,25 @@ Upgrade now: ${upgradeUrl}
 
       <div style="padding: 30px; background: #f9fafb;">
         <h2 style="color: #1e3a8a;">Thank you for your order, ${escapeHtml(booking.firstName)}!</h2>
-        <p>Your order has been confirmed and we're preparing your items for delivery.</p>
+        <p style="color: #374151;">Your order has been confirmed and we're preparing your items for delivery.</p>
+
+        ${upgradeCta}
 
         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
-          <p><strong>Order Number:</strong> ${escapeHtml(orderId)}</p>
+          <p style="color: #111827;"><strong>Order Number:</strong> ${escapeHtml(orderId)}</p>
 
           <h3 style="color: #1e3a8a;">Your Contact Information</h3>
-          <p><strong>Name:</strong> ${escapeHtml(booking.firstName)} ${escapeHtml(booking.lastName)}</p>
-          <p><strong>Email:</strong> ${escapeHtml(booking.email)}</p>
-          <p><strong>Phone:</strong> ${escapeHtml(booking.phone)}</p>
+          <p style="color: #111827;"><strong>Name:</strong> ${escapeHtml(booking.firstName)} ${escapeHtml(booking.lastName)}</p>
+          <p style="color: #111827;"><strong>Email:</strong> ${escapeHtml(booking.email)}</p>
+          <p style="color: #111827;"><strong>Phone:</strong> ${escapeHtml(booking.phone)}</p>
 
           <h3 style="color: #1e3a8a;">Delivery Details</h3>
-          <p><strong>Resort:</strong> ${escapeHtml(booking.resortName)}</p>
-          <p><strong>Address:</strong> ${escapeHtml(booking.resortAddress)}</p>
-          <p><strong>Delivery Date:</strong> ${escapeHtml(booking.checkInDate)}</p>
-          <p><strong>Delivery Time:</strong> ${escapeHtml(booking.deliveryTime)}</p>
-          <p><strong>Pickup Date:</strong> ${escapeHtml(booking.checkOutDate)}</p>
-          <p><strong>Rental Period:</strong> ${orderSummary.nights} night${orderSummary.nights > 1 ? "s" : ""}</p>
+          <p style="color: #111827;"><strong>Resort:</strong> ${escapeHtml(booking.resortName)}</p>
+          <p style="color: #111827;"><strong>Address:</strong> ${escapeHtml(booking.resortAddress)}</p>
+          <p style="color: #111827;"><strong>Delivery Date:</strong> ${escapeHtml(booking.checkInDate)}</p>
+          <p style="color: #111827;"><strong>Delivery Time:</strong> ${escapeHtml(booking.deliveryTime)}</p>
+          <p style="color: #111827;"><strong>Pickup Date:</strong> ${escapeHtml(booking.checkOutDate)}</p>
+          <p style="color: #111827;"><strong>Rental Period:</strong> ${orderSummary.nights} night${orderSummary.nights > 1 ? "s" : ""}</p>
         </div>
 
         ${booking.specialRequests ? `
@@ -187,28 +194,26 @@ Upgrade now: ${upgradeUrl}
 
         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #1e3a8a;">Order Summary</h3>
-          <p><strong>Your Rental:</strong> ${escapeHtml(orderDescription || "Rental items")}</p>
+          <p style="color: #111827;"><strong>Your Rental:</strong> ${escapeHtml(orderDescription || "Rental items")}</p>
 
           <hr style="margin: 20px 0;">
 
-          <p><strong>Subtotal:</strong> $${orderSummary.subtotal.toFixed(2)}</p>
-          <p><strong>Delivery Fee:</strong> ${orderSummary.deliveryFee === 0 ? `<span style='color: #22c55e;'>FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)</span>` : "$" + orderSummary.deliveryFee.toFixed(2)}</p>
-          <p><strong>Sales Tax (7%):</strong> $${orderSummary.salesTax.toFixed(2)}</p>
-          <p><strong>Processing Fee (3%):</strong> $${orderSummary.surcharge.toFixed(2)}</p>
-          <p style="font-size: 18px;"><strong>Total Charged:</strong> $${orderSummary.total.toFixed(2)}</p>
+          <p style="color: #111827;"><strong>Subtotal:</strong> $${orderSummary.subtotal.toFixed(2)}</p>
+          <p style="color: #111827;"><strong>Delivery Fee:</strong> ${orderSummary.deliveryFee === 0 ? `<span style='color: #16a34a;'>FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)</span>` : "$" + orderSummary.deliveryFee.toFixed(2)}</p>
+          <p style="color: #111827;"><strong>Sales Tax (7%):</strong> $${orderSummary.salesTax.toFixed(2)}</p>
+          <p style="color: #111827;"><strong>Processing Fee (3%):</strong> $${orderSummary.surcharge.toFixed(2)}</p>
+          <p style="font-size: 18px; color: #111827;"><strong>Total Charged:</strong> $${orderSummary.total.toFixed(2)}</p>
         </div>
 
         <div style="background: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #1e3a8a; margin-top: 0;">Important Information</h3>
-          <ul>
+          <ul style="color: #1e3a8a;">
             <li>Please have items ready for pickup on your checkout date.</li>
             <li>Contact us if you need to modify your order.</li>
           </ul>
         </div>
 
-        ${upgradeCta}
-
-        <p>Questions? Contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
+        <p style="color: #374151;">Questions? Contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
 
         <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
           Thank you for choosing Magical Slumber Orlando!<br>
@@ -225,7 +230,7 @@ Order Confirmed!
 Thank you for your order, ${booking.firstName}!
 
 Your order has been confirmed and we're preparing your items for delivery.
-
+${upgradeCtaText}
 Order Number: ${orderId}
 
 YOUR CONTACT INFORMATION
@@ -254,7 +259,7 @@ Total Charged: $${orderSummary.total.toFixed(2)}
 IMPORTANT INFORMATION
 - Please have items ready for pickup on your checkout date.
 - Contact us if you need to modify your order.
-${upgradeCtaText}
+
 Questions? Contact us at magicalslumberorlando@gmail.com
 
 Thank you for choosing Magical Slumber Orlando!
@@ -298,7 +303,7 @@ export async function sendUpgradeNotification(
 
     <h2>Upgrade Payment</h2>
     <p><strong>Upgrade Amount Charged:</strong> $${upgradeAmount.toFixed(2)}</p>
-    <p><em>No delivery fee, tax, or service fee — already paid on original order.</em></p>
+    <p><em>Delivery fee waived. Sales tax and service fee included in total.</em></p>
   `;
 
   const text = `
@@ -325,7 +330,7 @@ Nights: ${nights}
 
 UPGRADE PAYMENT
 Upgrade Amount Charged: $${upgradeAmount.toFixed(2)}
-No delivery fee, tax, or service fee - already paid on original order.
+Delivery fee waived. Sales tax and service fee included in total.
   `.trim();
 
   await sendEmail("magicalslumberorlando@gmail.com", subject, html, text);
@@ -352,7 +357,7 @@ export async function sendUpgradeConfirmation(
             <span style="font-size: 32px;">✓</span>
           </div>
           <h2 style="color: #1e3a8a;">Upgrade Confirmed, ${escapeHtml(booking.firstName)}!</h2>
-          <p>You've been upgraded from ${escapeHtml(originalProductName)} to the <strong>Ultimate Slumber Bundle</strong>!</p>
+          <p style="color: #374151;">You've been upgraded from ${escapeHtml(originalProductName)} to the <strong>Ultimate Slumber Bundle</strong>!</p>
         </div>
 
         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -367,22 +372,22 @@ export async function sendUpgradeConfirmation(
 
         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #1e3a8a;">Delivery Details</h3>
-          <p><strong>Resort:</strong> ${escapeHtml(booking.resortName)}</p>
-          <p><strong>Address:</strong> ${escapeHtml(booking.resortAddress)}</p>
-          <p><strong>Delivery Date:</strong> ${escapeHtml(booking.checkInDate)}</p>
-          <p><strong>Delivery Time:</strong> ${escapeHtml(booking.deliveryTime)}</p>
-          <p><strong>Pickup Date:</strong> ${escapeHtml(booking.checkOutDate)}</p>
-          <p><strong>Rental Period:</strong> ${nights} night${nights > 1 ? "s" : ""}</p>
+          <p style="color: #111827;"><strong>Resort:</strong> ${escapeHtml(booking.resortName)}</p>
+          <p style="color: #111827;"><strong>Address:</strong> ${escapeHtml(booking.resortAddress)}</p>
+          <p style="color: #111827;"><strong>Delivery Date:</strong> ${escapeHtml(booking.checkInDate)}</p>
+          <p style="color: #111827;"><strong>Delivery Time:</strong> ${escapeHtml(booking.deliveryTime)}</p>
+          <p style="color: #111827;"><strong>Pickup Date:</strong> ${escapeHtml(booking.checkOutDate)}</p>
+          <p style="color: #111827;"><strong>Rental Period:</strong> ${nights} night${nights > 1 ? "s" : ""}</p>
         </div>
 
         <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="color: #1e3a8a;">Upgrade Payment</h3>
-          <p><strong>Upgrade Amount:</strong> $${upgradeAmount.toFixed(2)}</p>
-          <p style="color: #22c55e;"><strong>Delivery Fee:</strong> Already paid</p>
-          <p style="color: #22c55e;"><strong>Tax & Service Fee:</strong> Waived</p>
+          <p style="color: #111827;"><strong>Upgrade Amount:</strong> $${upgradeAmount.toFixed(2)}</p>
+          <p style="color: #16a34a;"><strong>Delivery Fee:</strong> Waived</p>
+          <p style="color: #111827;"><em>Sales tax and service fee included in total.</em></p>
         </div>
 
-        <p>Questions? Contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
+        <p style="color: #374151;">Questions? Contact us at <a href="mailto:magicalslumberorlando@gmail.com">magicalslumberorlando@gmail.com</a></p>
 
         <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
           Thank you for upgrading with Magical Slumber Orlando!<br>
@@ -415,8 +420,8 @@ Rental Period: ${nights} night${nights > 1 ? "s" : ""}
 
 UPGRADE PAYMENT
 Upgrade Amount: $${upgradeAmount.toFixed(2)}
-Delivery Fee: Already paid
-Tax & Service Fee: Waived
+Delivery Fee: Waived
+Sales tax and service fee included in total.
 
 Questions? Contact us at magicalslumberorlando@gmail.com
 

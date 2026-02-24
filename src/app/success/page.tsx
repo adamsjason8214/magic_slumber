@@ -3,15 +3,15 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, XCircle, Mail, Calendar, MapPin, ArrowRight, ArrowUp, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Mail, Calendar, MapPin, ArrowRight, Loader2 } from "lucide-react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const [verificationState, setVerificationState] = useState<"loading" | "verified" | "failed">("loading");
   const [orderDescription, setOrderDescription] = useState("");
-  const [items, setItems] = useState<Array<{ productId: string; quantity: number }>>([]);
-  const [nights, setNights] = useState(0);
+  const [, setItems] = useState<Array<{ productId: string; quantity: number }>>([]);
+  const [, setNights] = useState(0);
 
   useEffect(() => {
     async function verifySession() {
@@ -40,15 +40,6 @@ function SuccessContent() {
 
     verifySession();
   }, [sessionId]);
-
-  // Check upgrade eligibility
-  const upgradeableItem = items.find(
-    item => (item.productId === "slumber-pod" || item.productId === "slumber-tot") && item.quantity === 1
-  );
-  const hasBundle = items.some(item => item.productId === "ultimate-bundle");
-  const isUpgradeEligible = !!upgradeableItem && !hasBundle && items.length === 1 && nights > 0;
-  const upgradePerNight = upgradeableItem?.productId === "slumber-pod" ? 6 : 8;
-  const upgradeTotal = upgradePerNight * nights;
 
   // Loading state
   if (verificationState === "loading") {
@@ -162,36 +153,6 @@ function SuccessContent() {
             </div>
           </div>
         </div>
-
-        {/* Upgrade Upsell */}
-        {isUpgradeEligible && (
-          <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-2xl p-8 mt-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-full mb-4">
-                <ArrowUp className="h-6 w-6 text-blue-500" />
-              </div>
-              <h2 className="text-xl font-bold mb-2">
-                Upgrade to the Ultimate Slumber Bundle!
-              </h2>
-              <p className="text-gray-400 mb-4">
-                Get the complete sleep setup: Slumber Pod + Portable Fan + Sound Machine + Video Baby Monitor
-              </p>
-              <p className="text-2xl font-bold text-blue-500 mb-1">
-                Only ${upgradeTotal.toFixed(2)} more
-              </p>
-              <p className="text-gray-500 text-sm mb-6">
-                ${upgradePerNight}/night x {nights} night{nights > 1 ? "s" : ""} &mdash; No additional fees!
-              </p>
-              <Link
-                href={`/upgrade?session_id=${sessionId}`}
-                className="inline-flex items-center justify-center px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition-colors"
-              >
-                Upgrade Now
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </div>
-          </div>
-        )}
 
         {/* Contact */}
         <div className="mt-6 text-center">
