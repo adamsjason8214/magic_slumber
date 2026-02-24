@@ -3,11 +3,11 @@ import { stripe } from "@/lib/stripe";
 import {
   SALES_TAX_RATE,
   SURCHARGE_RATE,
-  getDeliveryFee,
-  calculateBundlePrice,
-  calculatePodPrice,
-  calculateTotPrice,
-  calculateTotAddonPrice,
+  DELIVERY_FEE,
+  products,
+  calculateItemPrice,
+  validatePromoCode,
+  calculatePromoDiscount,
 } from "@/lib/products";
 import { sendOrderNotification, sendCustomerConfirmation } from "@/lib/email";
 import { BookingFormData, OrderSummary } from "@/types";
@@ -52,22 +52,36 @@ export async function POST(request: NextRequest) {
 
     try {
       const nights = parseInt(metadata.nights || "1");
-      const orderType = metadata.orderType as "bundle" | "pod" | "tot";
-      const hasTotAddon = metadata.hasTotAddon === "true";
+      const promoCode = metadata.promoCode || "";
 
-      // Calculate prices based on order type
-      let subtotal = 0;
-      if (orderType === "bundle") {
-        subtotal = calculateBundlePrice(nights);
-      } else if (orderType === "pod") {
-        subtotal = calculatePodPrice(nights);
-      } else if (orderType === "tot") {
-        subtotal = calculateTotPrice(nights);
+      // Reconstruct order from items metadata
+      let itemsList: Array<{ productId: string; quantity: number }> = [];
+      try {
+        itemsList = JSON.parse(metadata.items || "[]");
+      } catch {
+        itemsList = [];
       }
 
-      // Add Slumber Tot add-on if applicable
-      if (hasTotAddon && (orderType === "bundle" || orderType === "pod")) {
-        subtotal += calculateTotAddonPrice(nights);
+      // Calculate base subtotal from actual items
+      let baseSubtotal = 0;
+      let hasFreeDelivery = false;
+      for (const item of itemsList) {
+        const product = products.find(p => p.id === item.productId);
+        if (product) {
+          baseSubtotal += calculateItemPrice(product, nights) * item.quantity;
+          if (product.freeDelivery) hasFreeDelivery = true;
+        }
+      }
+
+      // Apply promo discount
+      let subtotal = baseSubtotal;
+      if (promoCode) {
+        const promoResult = calculatePromoDiscount(promoCode, baseSubtotal, nights);
+        if (promoResult.isFixedTotal && promoResult.fixedTotal !== undefined) {
+          subtotal = promoResult.fixedTotal;
+        } else {
+          subtotal = baseSubtotal - promoResult.discountAmount;
+        }
       }
 
       // Build booking data
@@ -83,13 +97,13 @@ export async function POST(request: NextRequest) {
         checkOutDate: metadata.checkOutDate || "",
         deliveryTime: metadata.deliveryTime || "",
         specialRequests: metadata.specialRequests || "",
-        items: [], // Items handled differently now
+        items: [],
       };
 
-      // Determine delivery fee based on nights
-      const deliveryFee = getDeliveryFee(nights);
+      // Determine delivery fee
+      const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
 
-      // Calculate 7% sales tax (on subtotal only, not on delivery fee)
+      // Calculate 7% sales tax (on rental subtotal only)
       const salesTax = subtotal * SALES_TAX_RATE;
 
       // Calculate 3% processing fee (on subtotal + delivery + tax)
@@ -109,11 +123,16 @@ export async function POST(request: NextRequest) {
       // Generate order ID
       const orderId = `SM-${Date.now().toString(36).toUpperCase()}`;
 
-      // Add order description to booking for email display
-      const orderDescription = metadata.orderDescription || `${orderType} rental`;
+      // Build order description from items or use metadata
+      const orderDescription = metadata.orderDescription || itemsList
+        .map(item => {
+          const product = products.find(p => p.id === item.productId);
+          return product ? `${product.name}${item.quantity > 1 ? ` x${item.quantity}` : ""}` : item.productId;
+        })
+        .join(", ") + ` - ${nights} night${nights > 1 ? "s" : ""}`;
 
       // Send emails with order description
-      console.log(`Attempting to send emails for order ${orderId} to ${booking.email}`);
+      console.log(`Attempting to send emails for order ${orderId}`);
 
       try {
         await Promise.all([

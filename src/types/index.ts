@@ -7,6 +7,7 @@ export interface Product {
   additionalNightPrice: number; // price per night after baseNights
   image: string;
   features: string[];
+  freeDelivery?: boolean; // true for Ultimate Bundle
 }
 
 export interface CartItem {

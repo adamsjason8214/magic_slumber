@@ -1,26 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { stripe, toStripeAmount } from "@/lib/stripe";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode, calculatePromoDiscount } from "@/lib/products";
+import { products, DELIVERY_FEE, SALES_TAX_RATE, SURCHARGE_RATE, calculateItemPrice, validatePromoCode, calculatePromoDiscount } from "@/lib/products";
+
+// Input validation schema
+const CheckoutSchema = z.object({
+  items: z.array(z.object({
+    productId: z.string().min(1),
+    quantity: z.number().int().min(1).max(10),
+  })).nonempty("Cart cannot be empty"),
+  customerInfo: z.object({
+    firstName: z.string().min(1).max(100),
+    lastName: z.string().min(1).max(100),
+    email: z.string().email("Invalid email format"),
+    phone: z.string().min(10).max(20),
+    resortName: z.string().min(1).max(200),
+    resortAddress: z.string().max(500).optional(),
+    roomNumber: z.string().max(50).optional(),
+    checkInDate: z.string().min(1),
+    checkOutDate: z.string().min(1),
+    deliveryTime: z.string().min(1),
+    specialRequests: z.string().max(1000).optional(),
+  }),
+  nights: z.number().int().min(1).max(30),
+  promoCode: z.string().max(50).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { items, customerInfo, nights, promoCode } = body;
 
-    // Validate promo code if provided
-    const promo = promoCode ? validatePromoCode(promoCode, nights) : null;
-
-    // Validate items
-    if (!items || items.length === 0) {
+    // Validate input
+    const parseResult = CheckoutSchema.safeParse(body);
+    if (!parseResult.success) {
       return NextResponse.json(
-        { error: "No items in cart" },
+        { error: "Invalid request data" },
         { status: 400 }
       );
     }
 
+    const { items, customerInfo, nights, promoCode } = parseResult.data;
+
+    // Validate promo code if provided
+    const promo = promoCode ? validatePromoCode(promoCode, nights) : null;
+
     // Calculate base subtotal
     let baseSubtotal = 0;
-    const itemsWithPrices = items.map((item: { productId: string; quantity: number; nights: number }) => {
+    const itemsWithPrices = items.map((item) => {
       const product = products.find(p => p.id === item.productId);
       if (!product) {
         throw new Error(`Product not found: ${item.productId}`);
@@ -34,62 +60,128 @@ export async function POST(request: NextRequest) {
     const promoResult = promoCode ? calculatePromoDiscount(promoCode, baseSubtotal, nights) : { discountAmount: 0, isFixedTotal: false };
 
     // Build line items for Stripe
-    const lineItems = itemsWithPrices.map(({ product, item, itemPrice }: { product: typeof products[0]; item: { quantity: number }; itemPrice: number }) => {
-      // For fixed_total promo, we set a minimal price and handle the total separately
-      let finalPrice = itemPrice;
-      if (promoResult.isFixedTotal && promoResult.fixedTotal !== undefined) {
-        // Distribute the fixed total across items proportionally
-        finalPrice = (promoResult.fixedTotal / items.length) / item.quantity;
-      } else if (promo && promo.type === "percentage") {
-        finalPrice = itemPrice * (1 - promo.value / 100);
-      }
+    let lineItems: Array<{
+      price_data: {
+        currency: string;
+        product_data: { name: string; description: string };
+        unit_amount: number;
+      };
+      quantity: number;
+    }> = [];
 
-      return {
+    // For fixed_total promo (test mode), charge only the fixed amount
+    if (promoResult.isFixedTotal && promoResult.fixedTotal !== undefined) {
+      lineItems.push({
         price_data: {
           currency: "usd",
           product_data: {
-            name: product.name,
-            description: promo ? `${nights} night rental (${promo.description})` : `${nights} night rental`,
+            name: "Test Order",
+            description: `${nights} night rental (${promo?.description || "Test discount"})`,
           },
-          unit_amount: toStripeAmount(Math.max(0.01, finalPrice)),
+          unit_amount: toStripeAmount(promoResult.fixedTotal),
         },
-        quantity: item.quantity,
-      };
-    });
+        quantity: 1,
+      });
+    } else {
+      // Normal pricing - add each product
+      lineItems = itemsWithPrices.map(({ product, item, itemPrice }: { product: typeof products[0]; item: { quantity: number }; itemPrice: number }) => {
+        let finalPrice = itemPrice;
+        if (promo && promo.type === "percentage") {
+          finalPrice = itemPrice * (1 - promo.value / 100);
+        }
 
-    // Add delivery fee
-    lineItems.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: "Delivery Fee",
-          description: "Resort delivery and pickup",
-        },
-        unit_amount: toStripeAmount(DELIVERY_FEE),
-      },
-      quantity: 1,
-    });
+        return {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: product.name,
+              description: promo ? `${nights} night rental (${promo.description})` : `${nights} night rental`,
+            },
+            unit_amount: toStripeAmount(Math.max(0.01, finalPrice)),
+          },
+          quantity: item.quantity,
+        };
+      });
 
-    // Add security deposit
-    lineItems.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: "Security Deposit (Refundable)",
-          description: "Refunded within 5-7 days after items returned in good condition",
-        },
-        unit_amount: toStripeAmount(DEPOSIT_AMOUNT),
-      },
-      quantity: 1,
-    });
+      // Check if any product has free delivery (Ultimate Bundle)
+      const hasFreeDelivery = itemsWithPrices.some(({ product }) => product.freeDelivery);
+
+      // Calculate delivery fee
+      const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
+
+      // Add delivery fee (skip if bundle with free delivery)
+      if (!hasFreeDelivery) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Delivery Fee",
+              description: "Resort delivery and pickup",
+            },
+            unit_amount: toStripeAmount(DELIVERY_FEE),
+          },
+          quantity: 1,
+        });
+      }
+
+      // Calculate discounted subtotal for tax/fee basis
+      let taxableSubtotal = baseSubtotal;
+      if (promo && promo.type === "percentage") {
+        taxableSubtotal = baseSubtotal * (1 - promo.value / 100);
+      }
+
+      // Add 7% Florida sales tax (on rental subtotal only)
+      const salesTax = taxableSubtotal * SALES_TAX_RATE;
+      if (salesTax > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Sales Tax (7%)",
+              description: "Florida sales tax",
+            },
+            unit_amount: toStripeAmount(salesTax),
+          },
+          quantity: 1,
+        });
+      }
+
+      // Add 3% processing/service fee (on subtotal + delivery + tax)
+      const surcharge = (taxableSubtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
+      if (surcharge > 0) {
+        lineItems.push({
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Service Fee (3%)",
+              description: "Payment processing fee",
+            },
+            unit_amount: toStripeAmount(surcharge),
+          },
+          quantity: 1,
+        });
+      }
+    }
+
+    // Build order description for metadata
+    const orderDescription = itemsWithPrices
+      .map(({ product, item }) => `${product.name}${item.quantity > 1 ? ` x${item.quantity}` : ""}`)
+      .join(", ") + ` - ${nights} night${nights > 1 ? "s" : ""}`;
+
+    // Ensure BASE_URL is properly formatted
+    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://magicalslumber.com";
+    baseUrl = baseUrl.trim().replace(/\/$/, "");
+    if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
+      baseUrl = "https://" + baseUrl;
+    }
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/book`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/book`,
       customer_email: customerInfo.email,
       metadata: {
         firstName: customerInfo.firstName,
@@ -106,14 +198,16 @@ export async function POST(request: NextRequest) {
         nights: nights.toString(),
         items: JSON.stringify(items),
         promoCode: promoCode || "",
+        orderDescription,
       },
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+    // Don't expose internal error details to client
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal server error" },
+      { error: "Unable to process checkout. Please try again." },
       { status: 500 }
     );
   }

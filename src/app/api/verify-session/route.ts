@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Rate limiter: 10 requests per minute per IP
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const ratelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60 s"),
+  prefix: "verify-session",
+});
 
 export async function GET(request: NextRequest) {
+  // Rate limiting
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+  const { success } = await ratelimit.limit(ip);
+  if (!success) {
+    return NextResponse.json(
+      { verified: false, error: "Too many requests" },
+      { status: 429 }
+    );
+  }
+
   const sessionId = request.nextUrl.searchParams.get("session_id");
 
   if (!sessionId) {

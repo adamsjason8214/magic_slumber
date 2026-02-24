@@ -50,9 +50,10 @@ export default function AddressAutocomplete({
       return;
     }
 
-    // Get Mapbox token from environment
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "pk.eyJ1IjoibWFnaWNzbHVtYmVyMSIsImEiOiJjbWtma2dsMmIwMDYzM2dvbzFyZ2l0ZHlnIn0.Oics5VNFISgsaB66CJNkpg";
+    // Get Mapbox token from environment (no fallback for security)
+    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
     if (!token) {
+      console.warn("NEXT_PUBLIC_MAPBOX_TOKEN not configured");
       return;
     }
 

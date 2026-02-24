@@ -1,27 +1,42 @@
 import { Product } from "@/types";
 
-// Standalone products available for individual rental
+// Products available for rental
 export const products: Product[] = [
+  {
+    id: "ultimate-bundle",
+    name: "Ultimate Slumber Bundle",
+    description: "Complete sleep setup with everything included.",
+    basePrice: 18, // Daily rate
+    baseNights: 1,
+    additionalNightPrice: 18,
+    image: "/images/slumber-pod.png",
+    features: [
+      "Slumber Pod",
+      "Portable Fan",
+      "Sound Machine",
+      "Video Baby Monitor",
+      "FREE delivery included",
+    ],
+    freeDelivery: true,
+  },
   {
     id: "slumber-pod",
     name: "Slumber Pod",
-    description: "The original blackout sleep pod for babies and toddlers. Creates a dark, private sleep space anywhere.",
+    description: "Blackout sleep pod for babies & toddlers.",
     basePrice: 12, // Daily rate
     baseNights: 1,
     additionalNightPrice: 12,
     image: "/images/slumber-pod.png",
     features: [
-      "Fits over most pack n plays and travel cribs",
       "99.9% blackout canopy",
-      "Breathable mesh panels",
+      "Fits over pack n plays",
       "Easy setup in minutes",
-      "Perfect for hotels and resorts",
     ],
   },
   {
     id: "slumber-tot",
     name: "Slumber Tot",
-    description: "Comfortable, portable mattress perfect for toddlers who have outgrown the pack n play.",
+    description: "Portable mattress for toddlers.",
     basePrice: 10, // Daily rate
     baseNights: 1,
     additionalNightPrice: 10,
@@ -29,9 +44,7 @@ export const products: Product[] = [
     features: [
       "Inflatable mattress",
       "Waterproof cover",
-      "Easy to clean",
-      "Folds for storage",
-      "SlumberPod can be placed over this bed",
+      "SlumberPod can go over it",
     ],
   },
 ];

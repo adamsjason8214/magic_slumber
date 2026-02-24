@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { products, DELIVERY_FEE, DEPOSIT_AMOUNT, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
+import { products, DELIVERY_FEE, SALES_TAX_RATE, SURCHARGE_RATE, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
 import { Product, CartItem } from "@/types";
 import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag, CheckSquare } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -85,10 +85,21 @@ export default function BookPage() {
     0
   );
 
+  // Check if cart has bundle with free delivery
+  const hasFreeDelivery = cart.some(item => item.product.freeDelivery);
+  const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
+
   // Apply promo discount
   const promoResult = promoApplied && promoCode ? calculatePromoDiscount(promoCode, baseSubtotal, nights) : { discountAmount: 0, isFixedTotal: false };
   const subtotal = promoResult.isFixedTotal ? (promoResult.fixedTotal || 0) : (baseSubtotal - promoResult.discountAmount);
-  const total = subtotal + DELIVERY_FEE + DEPOSIT_AMOUNT;
+
+  // Calculate 7% sales tax (on rental subtotal only)
+  const salesTax = subtotal * SALES_TAX_RATE;
+
+  // Calculate 3% service fee (on subtotal + delivery + tax)
+  const surcharge = (subtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
+
+  const total = subtotal + deliveryFee + salesTax + surcharge;
 
   const handleApplyPromo = () => {
     setPromoError("");
@@ -233,7 +244,7 @@ export default function BookPage() {
                         <div className="flex items-center justify-between">
                           <div>
                             <span className="text-blue-500 font-bold">${product.basePrice}</span>
-                            <span className="text-gray-400 text-sm">/{product.baseNights} nights</span>
+                            <span className="text-gray-400 text-sm">/night</span>
                           </div>
                           {inCart ? (
                             <div className="flex items-center space-x-2">
@@ -544,7 +555,6 @@ export default function BookPage() {
                   <h3 className="font-semibold mb-2">Secure Payment with Stripe</h3>
                   <p className="text-gray-400 text-sm">
                     You&apos;ll be redirected to Stripe&apos;s secure checkout to complete your payment.
-                    Your $50 security deposit is fully refundable upon return of items in good condition.
                   </p>
                 </div>
 
@@ -651,11 +661,17 @@ export default function BookPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Delivery Fee</span>
-                      <span>${DELIVERY_FEE.toFixed(2)}</span>
+                      <span className={hasFreeDelivery ? "text-green-400" : ""}>
+                        {hasFreeDelivery ? "FREE" : `$${DELIVERY_FEE.toFixed(2)}`}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Security Deposit (refundable)</span>
-                      <span>${DEPOSIT_AMOUNT.toFixed(2)}</span>
+                      <span className="text-gray-400">Sales Tax (7%)</span>
+                      <span>${salesTax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Service Fee (3%)</span>
+                      <span>${surcharge.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -665,10 +681,6 @@ export default function BookPage() {
                     <span>Total</span>
                     <span className="text-blue-500">${total.toFixed(2)}</span>
                   </div>
-
-                  <p className="text-xs text-gray-500">
-                    * Security deposit refunded within 5-7 business days after items are returned in good condition.
-                  </p>
                 </div>
               )}
             </div>
