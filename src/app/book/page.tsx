@@ -24,7 +24,6 @@ export default function BookPage() {
     phone: "",
     resortName: "",
     resortAddress: "",
-    roomNumber: "",
     checkInDate: "",
     checkOutDate: "",
     deliveryTime: "14:00",
@@ -445,17 +444,6 @@ export default function BookPage() {
                       onChange={(address) => setFormData({ ...formData, resortAddress: address })}
                       placeholder="Start typing resort address..."
                       className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-gray-400 mb-2">Room Number</label>
-                    <input
-                      type="text"
-                      name="roomNumber"
-                      value={formData.roomNumber}
-                      onChange={handleInputChange}
-                      className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
-                      placeholder="Room 1234"
                     />
                   </div>
                   <div>
