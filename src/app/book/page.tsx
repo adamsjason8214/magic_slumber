@@ -428,20 +428,23 @@ export default function BookPage() {
 
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Resort Name *</label>
-                    <input
-                      type="text"
-                      name="resortName"
+                    <AddressAutocomplete
                       value={formData.resortName}
-                      onChange={handleInputChange}
-                      className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
+                      onChange={(name) => setFormData(prev => ({ ...prev, resortName: name }))}
+                      onSelect={(suggestion) => setFormData(prev => ({
+                        ...prev,
+                        resortName: suggestion.text,
+                        resortAddress: suggestion.place_name,
+                      }))}
                       placeholder="Disney's Grand Floridian Resort"
+                      className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
                     <label className="block text-sm text-gray-400 mb-2">Resort Address</label>
                     <AddressAutocomplete
                       value={formData.resortAddress}
-                      onChange={(address) => setFormData({ ...formData, resortAddress: address })}
+                      onChange={(address) => setFormData(prev => ({ ...prev, resortAddress: address }))}
                       placeholder="Start typing resort address..."
                       className="w-full bg-black border border-white/20 rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none"
                     />

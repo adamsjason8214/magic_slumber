@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 interface AddressAutocompleteProps {
   value: string;
   onChange: (address: string, placeName?: string) => void;
+  onSelect?: (suggestion: { text: string; place_name: string }) => void;
   placeholder?: string;
   className?: string;
 }
@@ -18,6 +19,7 @@ interface Suggestion {
 export default function AddressAutocomplete({
   value,
   onChange,
+  onSelect,
   placeholder = "Start typing an address...",
   className = "",
 }: AddressAutocompleteProps) {
@@ -104,8 +106,12 @@ export default function AddressAutocomplete({
   };
 
   const handleSuggestionClick = (suggestion: Suggestion) => {
-    setInputValue(suggestion.place_name);
-    onChange(suggestion.place_name, suggestion.text);
+    if (onSelect) {
+      onSelect({ text: suggestion.text, place_name: suggestion.place_name });
+    } else {
+      setInputValue(suggestion.place_name);
+      onChange(suggestion.place_name, suggestion.text);
+    }
     setSuggestions([]);
     setIsOpen(false);
   };
