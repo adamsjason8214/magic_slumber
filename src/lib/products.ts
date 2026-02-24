@@ -88,6 +88,27 @@ export const SALES_TAX_RATE = 0.07; // 7% Florida sales tax
 export const SURCHARGE_RATE = 0.03; // 3% processing fee
 
 // ============================================
+// UPGRADE PRICING
+// ============================================
+
+// Calculate upgrade price from a standalone item to Ultimate Bundle
+// Returns null if not eligible for upgrade
+export function calculateUpgradePrice(originalProductId: string, nights: number): number | null {
+  let originalRate: number;
+  switch (originalProductId) {
+    case "slumber-pod":
+      originalRate = SLUMBER_POD_DAILY_RATE;
+      break;
+    case "slumber-tot":
+      originalRate = SLUMBER_TOT_DAILY_RATE;
+      break;
+    default:
+      return null; // Not upgradeable (already a bundle or unknown)
+  }
+  return (ULTIMATE_BUNDLE_DAILY_RATE - originalRate) * nights;
+}
+
+// ============================================
 // PRICING FUNCTIONS
 // ============================================
 

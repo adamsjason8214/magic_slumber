@@ -6,10 +6,9 @@ import {
   DELIVERY_FEE,
   products,
   calculateItemPrice,
-  validatePromoCode,
   calculatePromoDiscount,
 } from "@/lib/products";
-import { sendOrderNotification, sendCustomerConfirmation } from "@/lib/email";
+import { sendOrderNotification, sendCustomerConfirmation, sendUpgradeNotification, sendUpgradeConfirmation } from "@/lib/email";
 import { BookingFormData, OrderSummary } from "@/types";
 import Stripe from "stripe";
 
@@ -51,6 +50,44 @@ export async function POST(request: NextRequest) {
     }
 
     try {
+      // Handle upgrade payments separately
+      if (metadata.type === "upgrade") {
+        const nights = parseInt(metadata.nights || "1");
+        const originalProductId = metadata.originalProductId || "slumber-pod";
+        const originalProductName = originalProductId === "slumber-pod" ? "Slumber Pod" : "Slumber Tot";
+        const upgradeAmount = (session.amount_total || 0) / 100; // Convert from cents
+
+        const booking: BookingFormData = {
+          firstName: metadata.firstName || "",
+          lastName: metadata.lastName || "",
+          email: metadata.email || "",
+          phone: metadata.phone || "",
+          resortName: metadata.resortName || "",
+          resortAddress: metadata.resortAddress || "",
+          agentReferralEmail: "",
+          checkInDate: metadata.checkInDate || "",
+          checkOutDate: metadata.checkOutDate || "",
+          deliveryTime: metadata.deliveryTime || "",
+          specialRequests: "",
+          items: [],
+        };
+
+        const orderId = `SM-UPG-${Date.now().toString(36).toUpperCase()}`;
+        console.log(`Processing upgrade order ${orderId}`);
+
+        try {
+          await Promise.all([
+            sendUpgradeNotification(booking, orderId, originalProductName, upgradeAmount, nights),
+            sendUpgradeConfirmation(booking, orderId, originalProductName, upgradeAmount, nights),
+          ]);
+          console.log(`Upgrade ${orderId} completed and emails sent successfully`);
+        } catch (emailErr) {
+          console.error(`Upgrade email sending failed for ${orderId}:`, emailErr);
+        }
+
+        return NextResponse.json({ received: true });
+      }
+
       const nights = parseInt(metadata.nights || "1");
       const promoCode = metadata.promoCode || "";
 
@@ -131,13 +168,27 @@ export async function POST(request: NextRequest) {
         })
         .join(", ") + ` - ${nights} night${nights > 1 ? "s" : ""}`;
 
+      // Check upgrade eligibility for email CTA
+      const upgradeableItem = itemsList.find(
+        i => (i.productId === "slumber-pod" || i.productId === "slumber-tot") && i.quantity === 1
+      );
+      const hasBundle = itemsList.some(i => i.productId === "ultimate-bundle");
+      const isUpgradeEligible = !!upgradeableItem && !hasBundle && itemsList.length === 1;
+
       // Send emails with order description
       console.log(`Attempting to send emails for order ${orderId}`);
 
       try {
         await Promise.all([
           sendOrderNotification(booking, orderSummary, orderId, orderDescription),
-          sendCustomerConfirmation(booking, orderSummary, orderId, orderDescription),
+          sendCustomerConfirmation(booking, orderSummary, orderId, orderDescription,
+            isUpgradeEligible ? {
+              eligible: true,
+              sessionId: session.id,
+              originalProductId: upgradeableItem!.productId,
+              nights,
+            } : undefined
+          ),
         ]);
         console.log(`Order ${orderId} completed and emails sent successfully`);
       } catch (emailErr) {

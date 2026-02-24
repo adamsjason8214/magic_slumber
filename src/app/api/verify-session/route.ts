@@ -56,10 +56,21 @@ export async function GET(request: NextRequest) {
 
     // Check if payment was successful
     if (session.payment_status === "paid" && session.status === "complete") {
+      // Parse items from metadata for upgrade eligibility
+      let items: Array<{ productId: string; quantity: number }> = [];
+      try {
+        items = JSON.parse(session.metadata?.items || "[]");
+      } catch {
+        items = [];
+      }
+
       return NextResponse.json({
         verified: true,
         customerEmail: session.customer_details?.email || session.customer_email,
         orderDescription: session.metadata?.orderDescription || "",
+        items,
+        nights: parseInt(session.metadata?.nights || "1"),
+        sessionId: session.id,
       });
     }
 
