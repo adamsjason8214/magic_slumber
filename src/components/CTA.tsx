@@ -27,7 +27,7 @@ export default function CTA() {
         </Link>
 
         <p className="mt-6 text-gray-500 text-sm">
-          Free delivery to all Orlando area resorts
+          We deliver to all Orlando area resorts
         </p>
       </div>
     </section>

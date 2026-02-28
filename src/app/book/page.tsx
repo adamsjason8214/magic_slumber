@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { products, DELIVERY_FEE, SALES_TAX_RATE, SURCHARGE_RATE, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
+import { products, DELIVERY_FEE, SALES_TAX_RATE, SURCHARGE_RATE, SLUMBER_TOT_ADDON_DAILY_RATE, calculateItemPrice, validatePromoCode, calculatePromoDiscount, PromoCode } from "@/lib/products";
 import { Product, CartItem } from "@/types";
 import { Minus, Plus, Trash2, Calendar, User, Home, CreditCard, Loader2, Tag, CheckSquare } from "lucide-react";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -80,8 +80,16 @@ export default function BookPage() {
     }
   };
 
+  // Check if cart has bundle or pod (makes Tot an add-on at discounted rate)
+  const hasBundleOrPod = cart.some(item => item.product.id === "ultimate-bundle" || item.product.id === "slumber-pod");
+
   const baseSubtotal = cart.reduce(
-    (sum, item) => sum + calculateItemPrice(item.product, nights) * item.quantity,
+    (sum, item) => {
+      if (item.product.id === "slumber-tot" && hasBundleOrPod) {
+        return sum + SLUMBER_TOT_ADDON_DAILY_RATE * nights * item.quantity;
+      }
+      return sum + calculateItemPrice(item.product, nights) * item.quantity;
+    },
     0
   );
 
@@ -230,6 +238,8 @@ export default function BookPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {products.map((product) => {
                     const inCart = cart.find(item => item.product.id === product.id);
+                    const isAddonTot = product.id === "slumber-tot" && hasBundleOrPod;
+                    const displayPrice = isAddonTot ? SLUMBER_TOT_ADDON_DAILY_RATE : product.basePrice;
                     return (
                       <div
                         key={product.id}
@@ -243,8 +253,9 @@ export default function BookPage() {
                         <p className="text-gray-400 text-sm mb-4">{product.description}</p>
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-blue-500 font-bold">${product.basePrice}</span>
+                            <span className="text-blue-500 font-bold">${displayPrice}</span>
                             <span className="text-gray-400 text-sm">/night</span>
+                            {isAddonTot && <span className="text-green-400 text-xs ml-2">Add-on price</span>}
                           </div>
                           {inCart ? (
                             <div className="flex items-center space-x-2">
@@ -617,7 +628,11 @@ export default function BookPage() {
                 <p className="text-gray-400 text-sm">No items selected</p>
               ) : (
                 <div className="space-y-4">
-                  {cart.map((item) => (
+                  {cart.map((item) => {
+                    const isAddonTot = item.product.id === "slumber-tot" && hasBundleOrPod;
+                    const itemPrice = isAddonTot ? SLUMBER_TOT_ADDON_DAILY_RATE * nights : calculateItemPrice(item.product, nights);
+                    const itemRate = isAddonTot ? SLUMBER_TOT_ADDON_DAILY_RATE : item.product.basePrice;
+                    return (
                     <div key={item.product.id} className="flex items-start justify-between">
                       <div className="flex-1">
                         <p className="font-medium">{item.product.name}</p>
@@ -625,14 +640,12 @@ export default function BookPage() {
                           {item.quantity > 1 ? `${item.quantity} x ` : ""}
                           {promoApplied
                             ? `(${promoApplied.description})`
-                            : nights <= item.product.baseNights
-                              ? `$${item.product.basePrice} (${nights} night${nights > 1 ? "s" : ""})`
-                              : `$${item.product.basePrice} + $${item.product.additionalNightPrice} x ${nights - item.product.baseNights} extra`}
+                            : `$${itemRate} (${nights} night${nights > 1 ? "s" : ""})`}
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <span className={`font-medium ${promoApplied ? "text-green-400" : ""}`}>
-                          ${calculateItemPrice(item.product, nights).toFixed(2)}
+                          ${(itemPrice * item.quantity).toFixed(2)}
                         </span>
                         <button
                           onClick={() => removeFromCart(item.product.id)}
@@ -642,7 +655,8 @@ export default function BookPage() {
                         </button>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
 
                   <hr className="border-white/10" />
 

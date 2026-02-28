@@ -26,7 +26,7 @@ export default function Products() {
           </p>
           <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-2 rounded-full text-sm font-medium">
             <Sparkles className="h-4 w-4" />
-            <span>No minimum rental period. Free delivery on {FREE_DELIVERY_MIN_DAYS}+ night rentals!</span>
+            <span>No minimum rental period. $15 delivery fee (free on {FREE_DELIVERY_MIN_DAYS}+ night rentals!)</span>
           </div>
         </div>
 

@@ -102,13 +102,13 @@ export async function POST(request: NextRequest) {
         };
       });
 
-      // Check if any product has free delivery (Ultimate Bundle)
+      // Check if any product has free delivery
       const hasFreeDelivery = itemsWithPrices.some(({ product }) => product.freeDelivery);
 
       // Calculate delivery fee
       const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
 
-      // Add delivery fee (skip if bundle with free delivery)
+      // Add delivery fee
       if (!hasFreeDelivery) {
         lineItems.push({
           price_data: {

@@ -15,9 +15,7 @@ export const products: Product[] = [
       "Portable Fan",
       "Sound Machine",
       "Video Baby Monitor",
-      "FREE delivery included",
     ],
-    freeDelivery: true,
   },
   {
     id: "slumber-pod",
