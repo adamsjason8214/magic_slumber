@@ -18,7 +18,7 @@ Premium baby sleep equipment rentals for Orlando area resorts. Built with Next.j
 
 | Item | Price |
 |------|-------|
-| Ultimate Slumber Bundle | $18/night |
+| Ultimate Slumber Bundle | $16/night |
 | Slumber Pod | $12/night |
 | Slumber Tot | $10/night |
 | Slumber Tot Add-on | $8/night (with bundle/pod) |

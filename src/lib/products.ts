@@ -6,9 +6,9 @@ export const products: Product[] = [
     id: "ultimate-bundle",
     name: "Ultimate Slumber Bundle",
     description: "Complete sleep setup with everything included.",
-    basePrice: 18, // Daily rate
+    basePrice: 16, // Daily rate
     baseNights: 1,
-    additionalNightPrice: 18,
+    additionalNightPrice: 16,
     image: "/images/slumber-pod.png",
     features: [
       "Slumber Pod",
@@ -73,7 +73,7 @@ export const bundleOnlyItems = [
 // ============================================
 
 // Daily rates
-export const ULTIMATE_BUNDLE_DAILY_RATE = 18; // Includes: Pod + Fan + Sound Machine + Monitor
+export const ULTIMATE_BUNDLE_DAILY_RATE = 16; // Includes: Pod + Fan + Sound Machine + Monitor
 export const SLUMBER_POD_DAILY_RATE = 12;
 export const SLUMBER_TOT_DAILY_RATE = 10;
 export const SLUMBER_TOT_ADDON_DAILY_RATE = 8; // When added to Bundle or Pod

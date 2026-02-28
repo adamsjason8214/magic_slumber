@@ -75,7 +75,7 @@ function UpgradeContent() {
   };
 
   const originalName = originalItem === "slumber-pod" ? "Slumber Pod" : "Slumber Tot";
-  const perNight = originalItem === "slumber-pod" ? 6 : 8;
+  const perNight = originalItem === "slumber-pod" ? 4 : 6;
   const priceDiff = perNight * nights;
   const upgradeTax = priceDiff * 0.07;
   const upgradeFee = (priceDiff + upgradeTax) * 0.03;

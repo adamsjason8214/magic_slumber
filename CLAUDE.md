@@ -12,7 +12,7 @@ Baby sleep equipment rental website for Orlando resorts. Customers book Slumber 
 ### Pricing & Products
 - `src/lib/products.ts` - All pricing, products, and promo codes
   - `PROMO_CODES` - Test codes: `noahdavid2026`, `noahdavid112622`
-  - Daily rates: Bundle $18, Pod $12, Tot $10
+  - Daily rates: Bundle $16, Pod $12, Tot $10
 
 ### Booking Flow
 - `src/app/book/page.tsx` - Multi-step booking form
