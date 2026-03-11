@@ -101,12 +101,10 @@ export async function POST(request: NextRequest) {
 
       // Calculate base subtotal from actual items
       let baseSubtotal = 0;
-      let hasFreeDelivery = false;
       for (const item of itemsList) {
         const product = products.find(p => p.id === item.productId);
         if (product) {
           baseSubtotal += calculateItemPrice(product, nights) * item.quantity;
-          if (product.freeDelivery) hasFreeDelivery = true;
         }
       }
 
@@ -137,8 +135,8 @@ export async function POST(request: NextRequest) {
         items: [],
       };
 
-      // Determine delivery fee
-      const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
+      // Delivery fee
+      const deliveryFee = DELIVERY_FEE;
 
       // Calculate 7% sales tax (on rental subtotal only)
       const salesTax = subtotal * SALES_TAX_RATE;

@@ -93,19 +93,17 @@ export default function BookPage() {
     0
   );
 
-  // Check if cart has bundle with free delivery
-  const hasFreeDelivery = cart.some(item => item.product.freeDelivery);
-  const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
+  const deliveryFee = DELIVERY_FEE;
 
   // Apply promo discount
   const promoResult = promoApplied && promoCode ? calculatePromoDiscount(promoCode, baseSubtotal, nights) : { discountAmount: 0, isFixedTotal: false };
   const subtotal = promoResult.isFixedTotal ? (promoResult.fixedTotal || 0) : (baseSubtotal - promoResult.discountAmount);
 
-  // Calculate 7% sales tax (on rental subtotal only)
-  const salesTax = subtotal * SALES_TAX_RATE;
+  // Calculate 7% sales tax (on rental subtotal only) — round to cents to match Stripe
+  const salesTax = Math.round(subtotal * SALES_TAX_RATE * 100) / 100;
 
-  // Calculate 3% service fee (on subtotal + delivery + tax)
-  const surcharge = (subtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
+  // Calculate 3% service fee (on subtotal + delivery + tax) — round to cents to match Stripe
+  const surcharge = Math.round((subtotal + deliveryFee + salesTax) * SURCHARGE_RATE * 100) / 100;
 
   const total = subtotal + deliveryFee + salesTax + surcharge;
 
@@ -286,6 +284,23 @@ export default function BookPage() {
                     );
                   })}
                 </div>
+                {hasBundleOrPod && !cart.some(item => item.product.id === "slumber-tot") && (
+                  <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-5 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-yellow-400">Add a Slumber Tot for just ${SLUMBER_TOT_ADDON_DAILY_RATE}/night!</p>
+                      <p className="text-sm text-gray-400 mt-1">Portable inflatable mattress — perfect for toddlers transitioning out of the crib.</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const totProduct = products.find(p => p.id === "slumber-tot");
+                        if (totProduct) addToCart(totProduct);
+                      }}
+                      className="ml-4 bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                    >
+                      Add to Order
+                    </button>
+                  </div>
+                )}
                 <button
                   onClick={() => setStep(2)}
                   disabled={!isStep1Valid}
@@ -667,9 +682,7 @@ export default function BookPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Delivery Fee</span>
-                      <span className={hasFreeDelivery ? "text-green-400" : ""}>
-                        {hasFreeDelivery ? "FREE" : `$${DELIVERY_FEE.toFixed(2)}`}
-                      </span>
+                      <span>${DELIVERY_FEE.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Sales Tax (7%)</span>

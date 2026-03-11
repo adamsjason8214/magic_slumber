@@ -44,7 +44,7 @@ export default function Hero() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
           <div className="flex items-center justify-center space-x-3 text-gray-400">
             <Truck className="h-6 w-6 text-blue-500" />
-            <span>Free Delivery on 5+ Nights</span>
+            <span>Delivered to Your Resort</span>
           </div>
           <div className="flex items-center justify-center space-x-3 text-gray-400">
             <Shield className="h-6 w-6 text-blue-500" />

@@ -1,5 +1,5 @@
 import { BookingFormData, OrderSummary } from "@/types";
-import { FREE_DELIVERY_MIN_DAYS, SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE, ULTIMATE_BUNDLE_DAILY_RATE, SALES_TAX_RATE, SURCHARGE_RATE } from "./products";
+import { SLUMBER_POD_DAILY_RATE, SLUMBER_TOT_DAILY_RATE, ULTIMATE_BUNDLE_DAILY_RATE, SALES_TAX_RATE, SURCHARGE_RATE } from "./products";
 
 // Mailgun configuration
 const MAILGUN_API_KEY = (process.env.MAILGUN_API_KEY || "").trim();
@@ -73,7 +73,7 @@ export async function sendOrderNotification(
 
     <h2>Order Total</h2>
     <p><strong>Subtotal:</strong> $${orderSummary.subtotal.toFixed(2)}</p>
-    <p><strong>Delivery Fee:</strong> ${orderSummary.deliveryFee === 0 ? `FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)` : "$" + orderSummary.deliveryFee.toFixed(2)}</p>
+    <p><strong>Delivery Fee:</strong> $${orderSummary.deliveryFee.toFixed(2)}</p>
     <p><strong>Sales Tax (7%):</strong> $${orderSummary.salesTax.toFixed(2)}</p>
     <p><strong>Processing Fee (3%):</strong> $${orderSummary.surcharge.toFixed(2)}</p>
     <p><strong>Total Charged:</strong> $${orderSummary.total.toFixed(2)}</p>
@@ -107,7 +107,7 @@ Items: ${orderDescription || "Rental items"}
 
 ORDER TOTAL
 Subtotal: $${orderSummary.subtotal.toFixed(2)}
-Delivery Fee: ${orderSummary.deliveryFee === 0 ? `FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)` : "$" + orderSummary.deliveryFee.toFixed(2)}
+Delivery Fee: $${orderSummary.deliveryFee.toFixed(2)}
 Sales Tax (7%): $${orderSummary.salesTax.toFixed(2)}
 Processing Fee (3%): $${orderSummary.surcharge.toFixed(2)}
 Total Charged: $${orderSummary.total.toFixed(2)}
@@ -199,7 +199,7 @@ Upgrade now: ${upgradeUrl}
           <hr style="margin: 20px 0;">
 
           <p style="color: #111827;"><strong>Subtotal:</strong> $${orderSummary.subtotal.toFixed(2)}</p>
-          <p style="color: #111827;"><strong>Delivery Fee:</strong> ${orderSummary.deliveryFee === 0 ? `<span style='color: #16a34a;'>FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)</span>` : "$" + orderSummary.deliveryFee.toFixed(2)}</p>
+          <p style="color: #111827;"><strong>Delivery Fee:</strong> $${orderSummary.deliveryFee.toFixed(2)}</p>
           <p style="color: #111827;"><strong>Sales Tax (7%):</strong> $${orderSummary.salesTax.toFixed(2)}</p>
           <p style="color: #111827;"><strong>Processing Fee (3%):</strong> $${orderSummary.surcharge.toFixed(2)}</p>
           <p style="font-size: 18px; color: #111827;"><strong>Total Charged:</strong> $${orderSummary.total.toFixed(2)}</p>
@@ -251,7 +251,7 @@ ORDER SUMMARY
 Your Rental: ${orderDescription || "Rental items"}
 
 Subtotal: $${orderSummary.subtotal.toFixed(2)}
-Delivery Fee: ${orderSummary.deliveryFee === 0 ? `FREE (${FREE_DELIVERY_MIN_DAYS}+ nights)` : "$" + orderSummary.deliveryFee.toFixed(2)}
+Delivery Fee: $${orderSummary.deliveryFee.toFixed(2)}
 Sales Tax (7%): $${orderSummary.salesTax.toFixed(2)}
 Processing Fee (3%): $${orderSummary.surcharge.toFixed(2)}
 Total Charged: $${orderSummary.total.toFixed(2)}

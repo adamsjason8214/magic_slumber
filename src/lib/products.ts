@@ -78,7 +78,7 @@ export const SLUMBER_TOT_ADDON_DAILY_RATE = 8; // When added to Bundle or Pod
 
 // Delivery fee
 export const DELIVERY_FEE = 15;
-export const FREE_DELIVERY_MIN_DAYS = 5;
+
 
 // Other constants
 export const DEPOSIT_AMOUNT = 50; // Refundable security deposit
@@ -109,11 +109,6 @@ export function calculateUpgradePrice(originalProductId: string, nights: number)
 // ============================================
 // PRICING FUNCTIONS
 // ============================================
-
-// Get delivery fee based on rental duration
-export function getDeliveryFee(nights: number): number {
-  return nights >= FREE_DELIVERY_MIN_DAYS ? 0 : DELIVERY_FEE;
-}
 
 // Calculate price for Ultimate Bundle
 export function calculateBundlePrice(nights: number): number {

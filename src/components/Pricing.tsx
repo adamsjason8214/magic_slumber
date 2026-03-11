@@ -5,7 +5,6 @@ import {
   SLUMBER_POD_DAILY_RATE,
   SLUMBER_TOT_DAILY_RATE,
   SLUMBER_TOT_ADDON_DAILY_RATE,
-  FREE_DELIVERY_MIN_DAYS,
   DELIVERY_FEE,
 } from "@/lib/products";
 
@@ -53,11 +52,8 @@ export default function Pricing() {
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Simple <span className="gradient-text">Pricing</span>
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto mb-4">
-            No minimum rental period. Per-night pricing with free delivery on longer stays.
-          </p>
-          <p className="text-sm text-blue-400">
-            Delivery is free on rentals of {FREE_DELIVERY_MIN_DAYS} nights or more. ${DELIVERY_FEE} delivery fee for shorter rentals.
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            No minimum rental period. Per-night pricing. ${DELIVERY_FEE} delivery fee.
           </p>
         </div>
 

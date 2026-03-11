@@ -102,26 +102,19 @@ export async function POST(request: NextRequest) {
         };
       });
 
-      // Check if any product has free delivery
-      const hasFreeDelivery = itemsWithPrices.some(({ product }) => product.freeDelivery);
-
-      // Calculate delivery fee
-      const deliveryFee = hasFreeDelivery ? 0 : DELIVERY_FEE;
-
       // Add delivery fee
-      if (!hasFreeDelivery) {
-        lineItems.push({
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "Delivery Fee",
-              description: "Resort delivery and pickup",
-            },
-            unit_amount: toStripeAmount(DELIVERY_FEE),
+      const deliveryFee = DELIVERY_FEE;
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Delivery Fee",
+            description: "Resort delivery and pickup",
           },
-          quantity: 1,
-        });
-      }
+          unit_amount: toStripeAmount(DELIVERY_FEE),
+        },
+        quantity: 1,
+      });
 
       // Calculate discounted subtotal for tax/fee basis
       let taxableSubtotal = baseSubtotal;
@@ -130,7 +123,8 @@ export async function POST(request: NextRequest) {
       }
 
       // Add 7% Florida sales tax (on rental subtotal only)
-      const salesTax = taxableSubtotal * SALES_TAX_RATE;
+      // Round to cents first so Stripe total matches the booking page display
+      const salesTax = Math.round(taxableSubtotal * SALES_TAX_RATE * 100) / 100;
       if (salesTax > 0) {
         lineItems.push({
           price_data: {
@@ -146,7 +140,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Add 3% processing/service fee (on subtotal + delivery + tax)
-      const surcharge = (taxableSubtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
+      const surcharge = Math.round((taxableSubtotal + deliveryFee + salesTax) * SURCHARGE_RATE * 100) / 100;
       if (surcharge > 0) {
         lineItems.push({
           price_data: {
