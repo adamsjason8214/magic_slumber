@@ -141,8 +141,8 @@ export async function POST(request: NextRequest) {
       // Calculate 7% sales tax (on rental subtotal only)
       const salesTax = subtotal * SALES_TAX_RATE;
 
-      // Calculate 3% processing fee (on subtotal + delivery + tax)
-      const surcharge = (subtotal + deliveryFee + salesTax) * SURCHARGE_RATE;
+      // Calculate 3% processing fee (on subtotal + tax)
+      const surcharge = (subtotal + salesTax) * SURCHARGE_RATE;
 
       const orderSummary: OrderSummary = {
         items: [],

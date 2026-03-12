@@ -67,6 +67,8 @@ export async function POST(request: NextRequest) {
       rating: Math.min(5, Math.max(1, parseInt(rating) || 5)),
       text: sanitizedText,
       createdAt: new Date().toISOString(),
+      ownerResponse: "Thank you for choosing Magical Slumber Orlando! We appreciate your feedback and look forward to helping your family sleep soundly on your next visit!",
+      ownerResponseDate: new Date().toISOString(),
     };
 
     const redis = getRedis();

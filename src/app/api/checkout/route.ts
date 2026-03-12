@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Add 3% processing/service fee (on subtotal + delivery + tax)
-      const surcharge = Math.round((taxableSubtotal + deliveryFee + salesTax) * SURCHARGE_RATE * 100) / 100;
+      // Add 3% processing/service fee (on subtotal + tax)
+      const surcharge = Math.round((taxableSubtotal + salesTax) * SURCHARGE_RATE * 100) / 100;
       if (surcharge > 0) {
         lineItems.push({
           price_data: {

@@ -102,8 +102,8 @@ export default function BookPage() {
   // Calculate 7% sales tax (on rental subtotal only) — round to cents to match Stripe
   const salesTax = Math.round(subtotal * SALES_TAX_RATE * 100) / 100;
 
-  // Calculate 3% service fee (on subtotal + delivery + tax) — round to cents to match Stripe
-  const surcharge = Math.round((subtotal + deliveryFee + salesTax) * SURCHARGE_RATE * 100) / 100;
+  // Calculate 3% service fee (on subtotal + tax) — round to cents to match Stripe
+  const surcharge = Math.round((subtotal + salesTax) * SURCHARGE_RATE * 100) / 100;
 
   const total = subtotal + deliveryFee + salesTax + surcharge;
 
