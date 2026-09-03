@@ -11,16 +11,21 @@ export default function Hero() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 text-center">
+        {/* Brand line — the SEO-targeted phrase carries the actual <h1> below */}
+        <p className="text-sm sm:text-base font-semibold tracking-wide text-blue-400 mb-4 animate-fade-in-up">
+          Sleep Like Magic ✨
+        </p>
+
         {/* Main headline */}
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up">
-          Sleep Like Magic
-          <br />
-          <span className="gradient-text">On Your Vacation</span>
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6 animate-fade-in-up">
+          SlumberPod Rentals for{" "}
+          <span className="gradient-text">Babies &amp; Toddlers</span>{" "}
+          in Orlando
         </h1>
 
         {/* Subtitle */}
         <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-          Premium Slumber Pod rentals delivered to Disney, Universal & Legoland resorts.
+          Premium SlumberPod rentals delivered to Disney, Universal &amp; Legoland resorts.
           Give your little ones the dark, peaceful sleep they need so everyone can enjoy the magic.
         </p>
 

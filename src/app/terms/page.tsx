@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms & Conditions | Magical Slumber Orlando",
+  description: "The reservation terms, cancellation policy, and liability release for renting a SlumberPod or other items from Magical Slumber Orlando.",
+};
+
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">

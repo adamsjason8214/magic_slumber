@@ -44,6 +44,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/slumberpod-for-toddlers" className="text-gray-400 hover:text-white transition-colors">
+                  SlumberPod for Toddlers
+                </Link>
+              </li>
+              <li>
                 <Link href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">
                   How It Works
                 </Link>

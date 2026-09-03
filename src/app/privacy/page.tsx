@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy | Magical Slumber Orlando",
+  description: "How Magical Slumber Orlando collects, uses, and protects information submitted when you book a SlumberPod or other rental.",
+};
+
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-black pt-24 pb-16">
